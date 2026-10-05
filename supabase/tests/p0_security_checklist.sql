@@ -1,0 +1,12 @@
+-- P0 security verification checklist.
+-- Run against a test Supabase database with authenticated sessions for:
+-- 1. member cannot update role, membership_status, joined_at.
+-- 2. admin/pembina/dewan cannot update role.
+-- 3. only super_admin can change role and the last super_admin cannot be demoted.
+-- 4. member cannot update permission_requests status/reviewer fields.
+-- 5. client cannot insert audit_logs.
+-- 6. client cannot insert form_submission_events.
+-- 7. client cannot directly insert form_submissions or answers; submit_form RPC still works.
+-- 8. role_permissions is not readable through the Data API.
+-- 9. conversation members cannot move their own membership to another conversation.
+-- 10. form submission must use a published form version and include required fields.
