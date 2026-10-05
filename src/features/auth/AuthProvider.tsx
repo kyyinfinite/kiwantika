@@ -38,12 +38,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const loadProfile = async (currentUser: User | null) => {
-    if (!currentUser || !supabase) {
+    const client = supabase
+
+    if (!currentUser || !client) {
       setProfile(null)
       return
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('profiles')
       .select('id,full_name,display_name,email,role,membership_status,avatar_path,class_name,generation,group_name')
       .eq('id', currentUser.id)
@@ -58,7 +60,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    if (!supabase) {
+    const client = supabase
+
+    if (!client) {
       setLoading(false)
       return
     }
@@ -66,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let active = true
 
     const bootstrap = async () => {
-      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      const { data: { user: currentUser } } = await client.auth.getUser()
       if (!active) return
       setUser(currentUser)
       await loadProfile(currentUser)
@@ -75,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     bootstrap()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = client.auth.onAuthStateChange(async (_event, session) => {
       if (!active) return
       const currentUser = session?.user ?? null
       setUser(currentUser)
@@ -97,7 +101,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isStaff: Boolean(profile && STAFF_ROLES.includes(profile.role)),
     refreshProfile,
     signOut: async () => {
-      if (supabase) await supabase.auth.signOut()
+      const client = supabase
+      if (client) await client.auth.signOut()
     },
   }), [user, profile, loading])
 

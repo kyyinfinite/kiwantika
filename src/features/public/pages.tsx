@@ -33,12 +33,13 @@ function useHomeContent(){
   const [loading, setLoading] = useState(hasSupabase)
 
   useEffect(() => {
-    if (!supabase) return
+    const client = supabase
+    if (!client) return
     let active = true
     Promise.all([
-      supabase.from('events').select('id,title,slug,description,event_type,visibility,start_at,end_at,location,cover_path').eq('status','published').gte('start_at',new Date(Date.now()-3*3600*1000).toISOString()).order('start_at').limit(3),
-      supabase.from('articles').select('id,title,slug,excerpt,content,cover_path,category,published_at').eq('status','published').order('published_at',{ascending:false}).limit(3),
-      supabase.from('albums').select('id,title,slug,description,cover_path,created_at,photos(id,storage_path,caption,created_at)').order('created_at',{ascending:false}).limit(1),
+      client.from('events').select('id,title,slug,description,event_type,visibility,start_at,end_at,location,cover_path').eq('status','published').gte('start_at',new Date(Date.now()-3*3600*1000).toISOString()).order('start_at').limit(3),
+      client.from('articles').select('id,title,slug,excerpt,content,cover_path,category,published_at').eq('status','published').order('published_at',{ascending:false}).limit(3),
+      client.from('albums').select('id,title,slug,description,cover_path,created_at,photos(id,storage_path,caption,created_at)').order('created_at',{ascending:false}).limit(1),
     ]).then(([eventsResult, articlesResult, galleryResult]) => {
       if (!active) return
       if (eventsResult.data?.length) setEvents(eventsResult.data as Event[])
@@ -290,7 +291,8 @@ function ArticleCard({ article }: { article: Article }) {
 }
 
 function ArticleList() {
-  const query = useQuery<Article[]>(supabase ? () => supabase.from('articles').select(articleFields).eq('status', 'published').order('published_at', { ascending: false }) : null)
+  const client = supabase
+  const query = useQuery<Article[]>(client ? () => client.from('articles').select(articleFields).eq('status', 'published').order('published_at', { ascending: false }) : null)
   const items = query.data ?? []
   const [category, setCategory] = useState('semua')
   const categories = ['semua', ...Array.from(new Set(items.map(article => article.category).filter(Boolean)))]
@@ -322,7 +324,8 @@ function ShareButton({ title }: { title: string }) {
 
 function ArticleDetail() {
   const { slug = '' } = useParams()
-  const query = useQuery<Article>(supabase ? () => supabase.from('articles').select(articleFields).eq('status', 'published').eq('slug', slug).maybeSingle() : null, [slug])
+  const client = supabase
+  const query = useQuery<Article>(client ? () => client.from('articles').select(articleFields).eq('status', 'published').eq('slug', slug).maybeSingle() : null, [slug])
   const article = query.data ?? null
 
   useEffect(() => {
@@ -370,7 +373,8 @@ function EventRow({ event, past = false }: { event: Event; past?: boolean }) {
 }
 
 export function CalendarPage() {
-  const query = useQuery<Event[]>(supabase ? () => supabase.from('events').select(eventFields).eq('status', 'published').order('start_at') : null)
+  const client = supabase
+  const query = useQuery<Event[]>(client ? () => client.from('events').select(eventFields).eq('status', 'published').order('start_at') : null)
   const events = query.data ?? []
   const now = Date.now()
   const endOf = (event: Event) => new Date(event.end_at || event.start_at).getTime()
@@ -419,7 +423,8 @@ function Lightbox({ view, onClose, onMove }: { view: LightboxView; onClose: () =
 }
 
 export function GalleryPage() {
-  const query = useQuery<Album[]>(supabase ? () => supabase.from('albums').select('id,title,slug,description,cover_path,created_at,photos(id,storage_path,caption,created_at)').order('created_at', { ascending: false }) : null)
+  const client = supabase
+  const query = useQuery<Album[]>(client ? () => client.from('albums').select('id,title,slug,description,cover_path,created_at,photos(id,storage_path,caption,created_at)').order('created_at', { ascending: false }) : null)
   const albums = query.data ?? []
   const [view, setView] = useState<LightboxView | null>(null)
   const close = useCallback(() => setView(null), [])
@@ -459,16 +464,17 @@ export function RegistrationPage(){
  const fieldError=(key:string)=>touched[key]&&errors[key]?<small className="field-error" role="alert">{errors[key]}</small>:null
  const submit=async(e:FormEvent)=>{
   e.preventDefault(); setError(''); setMessage('');
-  if(!supabase){setError('Sistem pendaftaran belum terhubung ke Supabase.');return}
+  const client = supabase
+  if(!client){setError('Sistem pendaftaran belum terhubung ke Supabase.');return}
   if(Object.keys(errors).length){setTouched({nama:true,kelas:true,nomor_hp:true});setError('Periksa kembali data yang ditandai.');return}
   if(!form.izin_orang_tua){setError('Pastikan kamu sudah mendapatkan izin dari orang tua/wali.');return}
   setSubmitting(true)
   try{
-   const {data:version,error:vError}=await supabase.from('form_versions').select('id,form_id').eq('version_number',1).eq('form_id', (await supabase.from('forms').select('id').eq('slug','pendaftaran-kiwantika').single()).data?.id||'').single()
+   const {data:version,error:vError}=await client.from('form_versions').select('id,form_id').eq('version_number',1).eq('form_id', (await client.from('forms').select('id').eq('slug','pendaftaran-kiwantika').single()).data?.id||'').single()
    if(vError||!version) throw new Error('Formulir pendaftaran belum tersedia. Jalankan migration pendaftaran KIWANTIKA terlebih dahulu.')
    const submissionNumber=`KW-${new Date().getFullYear()}-${crypto.randomUUID().slice(0,8).toUpperCase()}`
    const answers={nama:form.nama.trim(),kelas:form.kelas.trim(),alasan:form.alasan.trim(),nomor_hp:normalizePhone(form.nomor_hp),izin_orang_tua:'Ya'}
-   const {error:submitError}=await supabase.rpc('submit_form',{p_form_id:version.form_id,p_form_version_id:version.id,p_submission_number:submissionNumber,p_applicant_id:null,p_answers:answers})
+   const {error:submitError}=await client.rpc('submit_form',{p_form_id:version.form_id,p_form_version_id:version.id,p_submission_number:submissionNumber,p_applicant_id:null,p_answers:answers})
    if(submitError) throw submitError
     setNumber(submissionNumber);setMessage('Pendaftaran berhasil dikirim.');setForm({nama:'',kelas:'',alasan:'',nomor_hp:'',izin_orang_tua:false})
   }catch(err){setError(err instanceof Error?err.message:'Pendaftaran gagal dikirim.')}finally{setSubmitting(false)}
@@ -483,9 +489,10 @@ export function LoginPage(){
   useEffect(()=>{if(!loading&&user)navigate(next,{replace:true})},[loading,user,next,navigate]);
   const submit=async(e:FormEvent)=>{
     e.preventDefault();
-    if(!supabase){setMessage('Supabase belum dikonfigurasi.');return}
+    const client = supabase
+    if(!client){setMessage('Supabase belum dikonfigurasi.');return}
     setSubmitting(true); setMessage('Memeriksa akun…');
-    const {error}=await supabase.auth.signInWithPassword({email:email.trim(),password});
+    const {error}=await client.auth.signInWithPassword({email:email.trim(),password});
     if(error){setMessage(error.message);setSubmitting(false);return}
     navigate(next,{replace:true})
   }
