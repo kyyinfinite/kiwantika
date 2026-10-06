@@ -52,6 +52,19 @@ export default defineConfig(({ mode }) => {
   const site = resolveSite(env)
   return {
     plugins: [react(), seoPlugin(site)],
+    server: env.AI_DEV_PROXY
+      ? {
+          proxy: {
+            '/api': {
+              target: env.AI_DEV_PROXY,
+              changeOrigin: true,
+              configure: proxy => {
+                proxy.on('proxyReq', (request: { setHeader: (name: string, value: string) => void }) => request.setHeader('origin', env.AI_DEV_PROXY))
+              },
+            },
+          },
+        }
+      : undefined,
     build: {
       target: 'es2020',
       sourcemap: false,

@@ -22,6 +22,22 @@ const MemberManager = lazyNamed(() => import('../features/admin/pages'), 'Member
 const FormManager = lazyNamed(() => import('../features/admin/form'), 'FormManager')
 const AttendancePage = lazyNamed(() => import('../features/attendance/pages'), 'AttendancePage')
 const AdminAttendancePage = lazyNamed(() => import('../features/attendance/pages'), 'AdminAttendancePage')
+const AssistantWidget = lazy(() => import('../features/assistant/AssistantWidget'))
+
+function DeferredAssistant() {
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    const start = () => setReady(true)
+    if ('requestIdleCallback' in window) {
+      const handle = window.requestIdleCallback(start, { timeout: 2500 })
+      return () => window.cancelIdleCallback(handle)
+    }
+    const handle = window.setTimeout(start, 1500)
+    return () => window.clearTimeout(handle)
+  }, [])
+  if (!ready) return null
+  return <Suspense fallback={null}><AssistantWidget /></Suspense>
+}
 
 const pageTitles: Array<[string, string]> = [
   ['/tentang', 'Tentang'], ['/berita', 'Berita'], ['/kalender', 'Kalender'], ['/galeri', 'Galeri'],
@@ -101,6 +117,7 @@ function Shell() {
     </div></header>
     <main id="konten" tabIndex={-1}><ErrorBoundary key={pathname}><Suspense fallback={<RouteProgress/>}><Outlet/></Suspense></ErrorBoundary></main>
     <footer><div className="wrap footer-grid"><div><strong>KIWANTIKA</strong><p>Ambalan Ki Hajar Dewantara – Dewi Sartika · SMAN 10 Garut</p></div><div><strong>Ikuti kami</strong><div className="social-row">{socials.map(s=><a key={s.name} className="social-link" href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label={`${s.name} KIWANTIKA`}>{s.icon}</a>)}</div></div></div><div className="wrap footer-base"><span>© {new Date().getFullYear()} KIWANTIKA · Gugus Depan 15.075 – 15.076</span><button type="button" onClick={()=>window.scrollTo({top:0,behavior:'smooth'})}>Kembali ke atas ↑</button></div></footer>
+    <DeferredAssistant/>
   </>
 }
 
