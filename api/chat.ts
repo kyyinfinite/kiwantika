@@ -168,14 +168,36 @@ async function loadPramukaKnowledge(query: string) {
   if (!base || !key || !query.trim()) return ''
   const headers = { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }
   try {
-    const response = await fetch(`${base}/rest/v1/rpc/search_pramuka_knowledge`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ p_query: query.slice(0, 500), p_audience: null, p_limit: 8 }),
-      signal: AbortSignal.timeout(3500),
-    })
-    if (!response.ok) return ''
-    const rows = await response.json() as Array<Record<string, unknown>>
+    // Retrieval memakai beberapa varian query. Pertanyaan natural seperti
+    // "Apa isi Dasa Darma?" tidak boleh gagal hanya karena kata "apa"/"isi"
+    // ikut masuk ke full-text query. Istilah materi diprioritaskan.
+    const normalized = query
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s-]/gu, ' ')
+      .replace(/\b(apa|apa itu|jelaskan|jelaskan tentang|isi|adalah|yang|dan|atau|dari|tentang|sebutkan|sebut|tolong|dong|ya|saya|mau|ingin|jelaskanlah)\b/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 500)
+    const knownTerms = [
+      'dasa darma', 'dasadarma', 'tri satya', 'trisatya', 'dwi satya', 'dwisatya',
+      'dwi darma', 'dwidarma', 'siaga', 'penggalang', 'penegak', 'pandega', 'pembina',
+      'sku', 'tkk', 'skk', 'bantara', 'laksana', 'ambalan', 'sangga', 'sistem among',
+      'metode kepramukaan', 'prinsip dasar kepramukaan', 'kmd', 'kml', 'sandi', 'morse', 'semaphore',
+    ]
+    const focused = knownTerms.filter(term => normalized.includes(term)).join(' ')
+    const variants = Array.from(new Set([focused, normalized, query.slice(0, 500)].filter(Boolean)))
+    let rows: Array<Record<string, unknown>> = []
+    for (const variant of variants) {
+      const response = await fetch(`${base}/rest/v1/rpc/search_pramuka_knowledge`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ p_query: variant, p_audience: null, p_limit: 8 }),
+        signal: AbortSignal.timeout(3500),
+      })
+      if (!response.ok) continue
+      const found = await response.json() as Array<Record<string, unknown>>
+      if (Array.isArray(found) && found.length) { rows = found; break }
+    }
     if (!Array.isArray(rows) || !rows.length) return ''
     return rows.map((row, index) => [
       `SUMBER ${index + 1}: ${String(row.title || '')}`,
@@ -217,6 +239,7 @@ function buildSystemPrompt(context: string, pramukaContext: string, pramukaQuest
     '- Halaman Tentang masih menyiapkan profil pembina dan Dewan Ambalan (Coming Soon). Jangan menyebut nama pengurus.',
     '- Akui jika kamu tidak yakin. Kamu adalah AI dan bisa keliru; untuk hal penting, sarankan konfirmasi ke pengurus.',
     '- Jika pertanyaan kepramukaan tidak didukung oleh BASIS PENGETAHUAN TERUJI, katakan bahwa materi tersebut belum terverifikasi di basis Tunas dan jangan membuat jawaban faktual baru.',
+    '- Jika pengguna meminta isi atau makna Dasa Darma, jelaskan sepuluh nilai dari sumber terverifikasi. Jangan mengatakan materi belum tersedia jika sumber Dasa Darma ditemukan. Jika pengguna meminta kutipan redaksi resmi lengkap, arahkan ke URL sumber resmi dan jangan mengarang redaksi.',
     '- Jangan menyatakan sebuah istilah, tingkatan, SKU, nomor keputusan, syarat, atau materi sebagai resmi bila tidak ada dukungan di sumber terverifikasi.',
     '- Jika ada perbedaan antar dokumen, sebutkan dokumen/tahun yang menjadi dasar jawaban dan jangan mencampur ketentuan tanpa penjelasan.',
     '',

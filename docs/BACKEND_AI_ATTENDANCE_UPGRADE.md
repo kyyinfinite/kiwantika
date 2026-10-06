@@ -55,3 +55,18 @@ Do not copy random blogs or let Tunas write its own knowledge back into this tab
 ## Source governance
 
 Kwarnas' current Peraturan page explicitly says its regulations are continuously updated. It currently lists the SKU guidance from 2011, the 2013 Penegak/Pandega mechanism, KMD guidance, and newer 2021–2023 regulations. Therefore the knowledge table is designed around **source records + verification dates**, not a one-time prompt dump. When a newer official document supersedes a topic, deactivate the older chunk/source and add the newer source rather than letting the model reconcile conflicting versions from memory.
+
+## Phase 10 — fix for natural-language retrieval
+
+A query such as `Apa isi Dasa Darma?` previously could abstain even when a matching knowledge row existed. The previous `plainto_tsquery` behavior effectively required filler words such as `apa` and `isi` to participate in matching. Phase 10 changes retrieval to use `websearch_to_tsquery` plus a focused keyword pass in `/api/chat`.
+
+It also adds a dedicated, source-backed Dasa Darma knowledge chunk. The chunk stores a concise verified summary rather than inventing text. Exact official wording remains linked to the Kwarnas source.
+
+After deploying the migration, test:
+
+- `Apa isi Dasa Darma?`
+- `Apa makna Dasa Darma pertama?`
+- `Apa kode kehormatan Penegak?`
+- `Apa perbedaan Dwisatya dan Trisatya?`
+
+The expected behavior is: retrieve evidence first; answer from evidence; abstain only when evidence is actually missing.
