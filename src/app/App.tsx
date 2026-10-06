@@ -27,13 +27,8 @@ const AssistantWidget = lazy(() => import('../features/assistant/AssistantWidget
 function DeferredAssistant() {
   const [ready, setReady] = useState(false)
   useEffect(() => {
-    const start = () => setReady(true)
-    if ('requestIdleCallback' in window) {
-      const handle = window.requestIdleCallback(start, { timeout: 2500 })
-      return () => window.cancelIdleCallback(handle)
-    }
-    const handle = window.setTimeout(start, 1500)
-    return () => window.clearTimeout(handle)
+    const timer = setTimeout(() => setReady(true), 1200)
+    return () => clearTimeout(timer)
   }, [])
   if (!ready) return null
   return <Suspense fallback={null}><AssistantWidget /></Suspense>
