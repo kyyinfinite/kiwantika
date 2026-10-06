@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { gsap, prefersReducedMotion } from '../../lib/motion'
 
 declare global {
   interface Window {
@@ -27,6 +28,25 @@ export function GoogleSignInButton({ onError, onBusyChange }: {
   const busyRef = useRef(onBusyChange)
   errorRef.current = onError
   busyRef.current = onBusyChange
+
+  useEffect(() => {
+    const node = containerRef.current?.parentElement
+    if (!node || prefersReducedMotion()) return
+    const move = (event: PointerEvent) => {
+      const rect = node.getBoundingClientRect()
+      const dx = (event.clientX - (rect.left + rect.width / 2)) / rect.width
+      const dy = (event.clientY - (rect.top + rect.height / 2)) / rect.height
+      gsap.to(node, { rotateX: -dy * 1.4, rotateY: dx * 1.8, y: -1, duration: .35, ease: 'power3.out', overwrite: true })
+    }
+    const leave = () => gsap.to(node, { rotateX: 0, rotateY: 0, y: 0, duration: .55, ease: 'power3.out', overwrite: true })
+    node.addEventListener('pointermove', move)
+    node.addEventListener('pointerleave', leave)
+    return () => {
+      node.removeEventListener('pointermove', move)
+      node.removeEventListener('pointerleave', leave)
+      gsap.set(node, { clearProps: 'transform' })
+    }
+  }, [])
 
   useEffect(() => {
     if (!clientId || !supabase || !containerRef.current) return

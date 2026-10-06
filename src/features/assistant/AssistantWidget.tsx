@@ -2,6 +2,7 @@ import { Fragment, useCallback, useEffect, useRef, useState, type FormEvent, typ
 import { Link, useLocation } from 'react-router-dom'
 import { RotateCcw, SendHorizontal, Sparkles, Square, X } from 'lucide-react'
 import './assistant.css'
+import { gsap, prefersReducedMotion } from '../../lib/motion'
 
 type Msg = { id: string; role: 'user' | 'assistant'; content: string; error?: string }
 type ListBlock = { ordered: boolean; items: string[] }
@@ -208,6 +209,25 @@ export default function AssistantWidget() {
   }, [messages, busy])
 
   useEffect(() => {
+    const launcher = launcherRef.current
+    if (!launcher || prefersReducedMotion()) return
+    const move = (event: PointerEvent) => {
+      const rect = launcher.getBoundingClientRect()
+      const dx = (event.clientX - (rect.left + rect.width / 2)) / rect.width
+      const dy = (event.clientY - (rect.top + rect.height / 2)) / rect.height
+      gsap.to(launcher, { x: dx * 7, y: dy * 7, rotateX: -dy * 3, rotateY: dx * 4, duration: .38, ease: 'power3.out', overwrite: true })
+    }
+    const leave = () => gsap.to(launcher, { x: 0, y: 0, rotateX: 0, rotateY: 0, duration: .65, ease: 'elastic.out(1, .55)', overwrite: true })
+    launcher.addEventListener('pointermove', move)
+    launcher.addEventListener('pointerleave', leave)
+    return () => {
+      launcher.removeEventListener('pointermove', move)
+      launcher.removeEventListener('pointerleave', leave)
+      gsap.set(launcher, { clearProps: 'transform' })
+    }
+  }, [])
+
+  useEffect(() => {
     if (!open) return
     inputRef.current?.focus()
     const onKey = (event: globalThis.KeyboardEvent) => { if (event.key === 'Escape') close() }
@@ -233,7 +253,7 @@ export default function AssistantWidget() {
 
   const lastMessage = messages[messages.length - 1]
 
-  return <div className={open ? 'tunas is-open' : 'tunas'}>
+  return <div className={open ? 'tunas is-open' : 'tunas'} style={{ perspective: '900px' }}>
     {open && <section className="tunas-panel" role="dialog" aria-label="Tunas, asisten digital KIWANTIKA">
       <header className="tunas-head">
         <span className="tunas-avatar"><img src="/media/kiwantika-logo.png" alt="" /></span>

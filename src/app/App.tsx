@@ -1,12 +1,13 @@
 import { BrowserRouter, Routes, Route, NavLink, Link, Outlet, useLocation } from 'react-router-dom'
 import { LogIn, Menu, Shield, UserRound, X } from 'lucide-react'
-import { lazy, Suspense, useEffect, useState, type ComponentType, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, type ComponentType, type ReactNode } from 'react'
 import { HomePage, AboutPage, NewsPage, CalendarPage, GalleryPage, RegistrationPage, LoginPage, NotFoundPage } from '../features/public/pages'
 import { ErrorBoundary, RouteProgress } from '../components/feedback'
 import { AuthProvider, ProtectedRoute, StaffRoute, useAuth } from '../features/auth/AuthProvider'
 import '../styles/app.css'
 import '../styles/kiwantika.css'
 import '../styles/polish.css'
+import { gsap, prefersReducedMotion } from '../lib/motion'
 
 function lazyNamed<K extends string>(loader: () => Promise<Record<K, ComponentType<any>>>, key: K) {
   return lazy(() => loader().then(module => ({ default: module[key] })))
@@ -53,6 +54,32 @@ function upsertTag(tag: 'link' | 'meta', key: string, keyValue: string, attr: st
   element.setAttribute(attr, value)
 }
 
+function RouteMotion() {
+  const { pathname } = useLocation()
+  const ref = useRef<HTMLElement>(null)
+
+  useLayoutEffect(() => {
+    const main = ref.current
+    if (!main || prefersReducedMotion()) return
+    const ctx = gsap.context(() => {
+      gsap.fromTo(main,
+        { autoAlpha: 0.72, y: 10, clipPath: 'inset(1.5% 0 0 0 round 0px)' },
+        {
+          autoAlpha: 1,
+          y: 0,
+          clipPath: 'inset(0% 0 0 0 round 0px)',
+          duration: 0.62,
+          ease: 'expo.out',
+          clearProps: 'clipPath,transform,opacity',
+        },
+      )
+    }, main)
+    return () => ctx.revert()
+  }, [pathname])
+
+  return <main ref={ref} id="konten" tabIndex={-1}><ErrorBoundary key={pathname}><Suspense fallback={<RouteProgress/>}><Outlet/></Suspense></ErrorBoundary></main>
+}
+
 function RouteEffects() {
   const { pathname, hash } = useLocation()
   useEffect(() => {
@@ -89,6 +116,7 @@ function Shell() {
   const { user, isStaff } = useAuth()
   const { pathname } = useLocation()
   const [scrolled, setScrolled] = useState(false)
+  const navRef = useRef<HTMLElement>(null)
   useEffect(() => { setOpen(false) }, [pathname])
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -96,6 +124,23 @@ function Shell() {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+  useLayoutEffect(() => {
+    const nav = navRef.current
+    if (!nav || prefersReducedMotion()) return
+    const links = nav.querySelectorAll<HTMLElement>('a')
+    const ctx = gsap.context(() => {
+      gsap.killTweensOf(links)
+      gsap.fromTo(links,
+        { autoAlpha: 0, y: -7 },
+        { autoAlpha: 1, y: 0, duration: 0.48, stagger: 0.045, ease: 'power4.out', clearProps: 'transform,opacity' }
+      )
+      const active = nav.querySelector<HTMLElement>('a.active')
+      if (active) {
+        gsap.fromTo(active, { scale: 0.96 }, { scale: 1, duration: 0.55, ease: 'back.out(1.8)', clearProps: 'transform' })
+      }
+    }, nav)
+    return () => ctx.revert()
+  }, [pathname, open])
   useEffect(() => {
     if (!open) return
     const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false) }
@@ -107,10 +152,10 @@ function Shell() {
     <a className="skip-link" href="#konten">Lewati ke konten</a>
     <header className={scrolled ? 'site-header is-scrolled' : 'site-header'}><div className="wrap header-inner">
       <Link to="/" className="brand" onClick={()=>setOpen(false)}><span className="brand-mark brand-image"><img src="/media/kiwantika-logo.png" alt="" onError={(event)=>{event.currentTarget.style.display='none'}}/><b>K</b></span><span><strong>KIWANTIKA</strong><small>SMAN 10 GARUT</small></span></Link>
-      <nav id="menu-utama" aria-label="Navigasi utama" className={open ? 'main-nav open' : 'main-nav'}>{nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/' } onClick={()=>setOpen(false)}>{label}</NavLink>)}<NavLink to="/daftarkiwantika" onClick={()=>setOpen(false)}>Daftar KIWANTIKA</NavLink>{user?<><NavLink to="/dashboard" onClick={()=>setOpen(false)}><UserRound size={16}/> Dashboard</NavLink>{isStaff&&<NavLink to="/admin" onClick={()=>setOpen(false)}><Shield size={16}/> Admin</NavLink>}</>:<NavLink to="/masuk" onClick={()=>setOpen(false)}><LogIn size={16}/> Masuk</NavLink>}</nav>
+      <nav ref={navRef} id="menu-utama" aria-label="Navigasi utama" className={open ? 'main-nav open' : 'main-nav'}>{nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/' } onClick={()=>setOpen(false)}>{label}</NavLink>)}<NavLink to="/daftarkiwantika" onClick={()=>setOpen(false)}>Daftar KIWANTIKA</NavLink>{user?<><NavLink to="/dashboard" onClick={()=>setOpen(false)}><UserRound size={16}/> Dashboard</NavLink>{isStaff&&<NavLink to="/admin" onClick={()=>setOpen(false)}><Shield size={16}/> Admin</NavLink>}</>:<NavLink to="/masuk" onClick={()=>setOpen(false)}><LogIn size={16}/> Masuk</NavLink>}</nav>
       <button className="mobile-menu" aria-label={open ? 'Tutup menu' : 'Buka menu'} aria-expanded={open} aria-controls="menu-utama" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button>
     </div></header>
-    <main id="konten" tabIndex={-1}><ErrorBoundary key={pathname}><Suspense fallback={<RouteProgress/>}><Outlet/></Suspense></ErrorBoundary></main>
+    <RouteMotion/>
     <footer><div className="wrap footer-grid"><div><strong>KIWANTIKA</strong><p>Ambalan Ki Hajar Dewantara – Dewi Sartika · SMAN 10 Garut</p></div><div><strong>Ikuti kami</strong><div className="social-row">{socials.map(s=><a key={s.name} className="social-link" href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label={`${s.name} KIWANTIKA`}>{s.icon}</a>)}</div></div></div><div className="wrap footer-base"><span>© {new Date().getFullYear()} KIWANTIKA · Gugus Depan 15.075 – 15.076</span><button type="button" onClick={()=>window.scrollTo({top:0,behavior:'smooth'})}>Kembali ke atas ↑</button></div></footer>
     <DeferredAssistant/>
   </>
