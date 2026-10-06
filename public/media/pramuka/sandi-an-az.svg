@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" role="img" aria-labelledby="t d">
+<title id="t">Kunci sandi AN dan AZ</title><desc id="d">Dua tabel pasangan alfabet untuk memahami sandi substitusi AN dan AZ.</desc>
+<rect width="1200" height="620" rx="32" fill="#f7f4ec"/>
+<text x="60" y="64" font-family="Arial,sans-serif" font-size="34" font-weight="800" fill="#173d2b">KUNCI SANDI AN &amp; AZ</text>
+<text x="60" y="94" font-family="Arial,sans-serif" font-size="15" fill="#66756c">Baca pasangan huruf sebagai kunci sebelum memecahkan pesan.</text>
+<g transform="translate(50 135)">
+ <rect width="1100" height="190" rx="22" fill="#fff" stroke="#cfdad1"/>
+ <text x="28" y="38" font-family="Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="2" fill="#1f6847">AN · A ↔ N</text>
+ <g font-family="monospace" font-size="16" font-weight="800" text-anchor="middle">
+  <g fill="#173d2b"> <text x="95" y="78">A</text><text x="170" y="78">B</text><text x="245" y="78">C</text><text x="320" y="78">D</text><text x="395" y="78">E</text><text x="470" y="78">F</text><text x="545" y="78">G</text><text x="620" y="78">H</text><text x="695" y="78">I</text><text x="770" y="78">J</text><text x="845" y="78">K</text><text x="920" y="78">L</text><text x="995" y="78">M</text></g>
+  <g fill="#c8281e"><text x="95" y="132">N</text><text x="170" y="132">O</text><text x="245" y="132">P</text><text x="320" y="132">Q</text><text x="395" y="132">R</text><text x="470" y="132">S</text><text x="545" y="132">T</text><text x="620" y="132">U</text><text x="695" y="132">V</text><text x="770" y="132">W</text><text x="845" y="132">X</text><text x="920" y="132">Y</text><text x="995" y="132">Z</text></g>
+ </g>
+ <path d="M70 101H1020" stroke="#dfe6e0"/>
+</g>
+<g transform="translate(50 350)">
+ <rect width="1100" height="190" rx="22" fill="#fff" stroke="#cfdad1"/>
+ <text x="28" y="38" font-family="Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="2" fill="#1f6847">AZ · A ↔ Z</text>
+ <g font-family="monospace" font-size="16" font-weight="800" text-anchor="middle">
+  <g fill="#173d2b"><text x="95" y="78">A</text><text x="170" y="78">B</text><text x="245" y="78">C</text><text x="320" y="78">D</text><text x="395" y="78">E</text><text x="470" y="78">F</text><text x="545" y="78">G</text><text x="620" y="78">H</text><text x="695" y="78">I</text><text x="770" y="78">J</text><text x="845" y="78">K</text><text x="920" y="78">L</text><text x="995" y="78">M</text></g>
+  <g fill="#c8281e"><text x="95" y="132">Z</text><text x="170" y="132">Y</text><text x="245" y="132">X</text><text x="320" y="132">W</text><text x="395" y="132">V</text><text x="470" y="132">U</text><text x="545" y="132">T</text><text x="620" y="132">S</text><text x="695" y="132">R</text><text x="770" y="132">Q</text><text x="845" y="132">P</text><text x="920" y="132">O</text><text x="995" y="132">N</text></g>
+ </g>
+ <path d="M70 101H1020" stroke="#dfe6e0"/>
+</g>
+<text x="1140" y="586" text-anchor="end" font-family="Arial,sans-serif" font-size="11" letter-spacing="1.5" fill="#74857a">KIWANTIKA · VISUAL LAB</text>
+</svg>

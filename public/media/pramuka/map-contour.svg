@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520">
+<rect width="900" height="520" rx="28" fill="#f7faf6"/>
+<path d="M55 70h790v390H55z" fill="#fff" stroke="#163d2b" stroke-width="4"/>
+<g fill="none" stroke="#6c8b77" stroke-width="3" opacity=".9">
+ <path d="M130 340c35-90 105-130 180-100s90 120 170 90 140-30 210 20"/>
+ <path d="M160 350c25-62 88-94 145-72s76 91 135 69 124-24 185 13"/>
+ <path d="M195 350c20-42 67-62 108-45s60 63 104 49 91-17 139 8"/>
+ <path d="M230 350c14-25 44-36 72-25s39 35 66 27 55-11 82 5"/>
+ <path d="M300 350c7-12 21-17 34-12s20 16 33 12 27-5 39 2"/>
+</g>
+<path d="M80 130h220" stroke="#c99b35" stroke-width="5"/><text x="80" y="115" font-family="Arial" font-size="15" fill="#5e7065">scale / distance</text>
+<path d="M610 105v100" stroke="#c52f25" stroke-width="5"/><path d="M610 105l-10 18h20z" fill="#c52f25"/><text x="625" y="115" font-family="Arial" font-size="15" fill="#5e7065">N</text>
+<g font-family="Arial" fill="#163d2b"><text x="90" y="425" font-size="24" font-weight="800">KONTUR</text><text x="90" y="448" font-size="14" fill="#66766d">garis yang membantu membaca relief/ketinggian</text><text x="610" y="420" font-size="19" font-weight="800">LEGENDA</text><circle cx="610" cy="445" r="5" fill="#c52f25"/><text x="625" y="450" font-size="13" fill="#66766d">simbol objek</text></g>
+</svg>

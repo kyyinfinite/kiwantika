@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" role="img" aria-labelledby="t d">
+<title id="t">Delapan arah posisi tangan semaphore</title><desc id="d">Diagram arah tangan semaphore dengan interval 45 derajat dan notasi jam.</desc>
+<rect width="800" height="520" rx="32" fill="#f6f8f4"/>
+<g transform="translate(400 270)">
+ <circle r="170" fill="#fff" stroke="#d9e2db" stroke-width="2"/>
+ <circle r="112" fill="none" stroke="#e8eee9" stroke-width="2" stroke-dasharray="5 8"/>
+ <g stroke="#1f6847" stroke-width="2" opacity=".25">
+  <path d="M0-170V-112M120-120L79-79M170 0H112M120 120L79 79M0 170V112M-120 120L-79 79M-170 0H-112M-120-120L-79-79"/>
+ </g>
+ <g font-family="Arial, sans-serif" text-anchor="middle" fill="#123d2a">
+  <text y="-192" font-size="20" font-weight="800">12:00 · 0°</text>
+  <text x="136" y="-136" font-size="18" font-weight="800">1:30 · 45°</text>
+  <text x="205" y="6" font-size="18" font-weight="800">3:00 · 90°</text>
+  <text x="136" y="153" font-size="18" font-weight="800">4:30 · 135°</text>
+  <text y="203" font-size="18" font-weight="800">6:00 · 180°</text>
+  <text x="-136" y="153" font-size="18" font-weight="800">7:30 · 225°</text>
+  <text x="-205" y="6" font-size="18" font-weight="800">9:00 · 270°</text>
+  <text x="-136" y="-136" font-size="18" font-weight="800">10:30 · 315°</text>
+  <text y="-28" font-size="24" font-weight="900">SEMAPHORE</text>
+  <text y="5" font-size="14" fill="#64756a">8 posisi × 45°</text>
+  <text y="31" font-size="12" fill="#64756a">Dibaca sebagai pasangan dua posisi tangan</text>
+ </g>
+ <circle r="28" fill="#123d2a"/>
+ <circle r="9" fill="#f1c95c"/>
+</g>
+<text x="30" y="44" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#66756c" letter-spacing="2">KIWANTIKA · VISUAL LAB</text>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 520">
+<rect width="720" height="520" rx="28" fill="#f7faf6"/>
+<g transform="translate(360 260)">
+ <circle r="190" fill="#fff" stroke="#163d2b" stroke-width="8"/>
+ <circle r="150" fill="#eef5ef" stroke="#a9bcae" stroke-width="3"/>
+ <g stroke="#597264" stroke-width="4" stroke-linecap="round">
+  <path d="M0-174v28M174 0h-28M0 174v-28M-174 0h28"/>
+  <path d="M-123-123l20 20M123-123l-20 20M123 123l-20-20M-123 123l20-20" opacity=".6"/>
+ </g>
+ <path d="M0-130 L20 0 L0 130 L-20 0 Z" fill="#c52f25"/>
+ <path d="M0-130 L20 0 L0 130 L-20 0 Z" fill="#dfe9e1" transform="rotate(180)"/>
+ <circle r="22" fill="#fff" stroke="#163d2b" stroke-width="5"/>
+ <circle r="8" fill="#163d2b"/>
+ <text x="0" y="-205" text-anchor="middle" font-family="Arial" font-size="28" font-weight="800" fill="#163d2b">N</text>
+ <text x="205" y="9" text-anchor="middle" font-family="Arial" font-size="25" font-weight="800" fill="#163d2b">E</text>
+ <text x="0" y="230" text-anchor="middle" font-family="Arial" font-size="25" font-weight="800" fill="#163d2b">S</text>
+ <text x="-205" y="9" text-anchor="middle" font-family="Arial" font-size="25" font-weight="800" fill="#163d2b">W</text>
+ <text x="0" y="-245" text-anchor="middle" font-family="Arial" font-size="13" letter-spacing="3" fill="#74857a">MAGNETIC COMPASS</text>
+</g>
+</svg>

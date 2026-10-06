@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 500" role="img" aria-labelledby="t d">
+<title id="t">Sandi angka A sama dengan 1 sampai Z sama dengan 26</title><desc id="d">Tabel alfabet dan nomor untuk latihan substitusi sederhana.</desc>
+<rect width="1100" height="500" rx="32" fill="#f7f4ec"/>
+<text x="55" y="62" font-family="Arial,sans-serif" font-size="34" font-weight="800" fill="#173d2b">SANDI ANGKA · A = 1</text>
+<text x="55" y="92" font-family="Arial,sans-serif" font-size="15" fill="#66756c">Pemetaan alfabet ke nomor sebagai latihan substitusi.</text>
+<g transform="translate(55 135)">
+ <rect width="990" height="250" rx="22" fill="#fff" stroke="#cfdad1"/>
+ <g font-family="monospace" font-size="15" font-weight="800" text-anchor="middle">
+  <g fill="#1f6847"><text x="45" y="42">A</text><text x="120" y="42">B</text><text x="195" y="42">C</text><text x="270" y="42">D</text><text x="345" y="42">E</text><text x="420" y="42">F</text><text x="495" y="42">G</text><text x="570" y="42">H</text><text x="645" y="42">I</text><text x="720" y="42">J</text><text x="795" y="42">K</text><text x="870" y="42">L</text><text x="945" y="42">M</text></g>
+  <g fill="#c8281e"><text x="45" y="82">1</text><text x="120" y="82">2</text><text x="195" y="82">3</text><text x="270" y="82">4</text><text x="345" y="82">5</text><text x="420" y="82">6</text><text x="495" y="82">7</text><text x="570" y="82">8</text><text x="645" y="82">9</text><text x="720" y="82">10</text><text x="795" y="82">11</text><text x="870" y="82">12</text><text x="945" y="82">13</text></g>
+  <line x1="25" y1="105" x2="965" y2="105" stroke="#e1e8e2"/>
+  <g fill="#1f6847"><text x="45" y="152">N</text><text x="120" y="152">O</text><text x="195" y="152">P</text><text x="270" y="152">Q</text><text x="345" y="152">R</text><text x="420" y="152">S</text><text x="495" y="152">T</text><text x="570" y="152">U</text><text x="645" y="152">V</text><text x="720" y="152">W</text><text x="795" y="152">X</text><text x="870" y="152">Y</text><text x="945" y="152">Z</text></g>
+  <g fill="#c8281e"><text x="45" y="192">14</text><text x="120" y="192">15</text><text x="195" y="192">16</text><text x="270" y="192">17</text><text x="345" y="192">18</text><text x="420" y="192">19</text><text x="495" y="192">20</text><text x="570" y="192">21</text><text x="645" y="192">22</text><text x="720" y="192">23</text><text x="795" y="192">24</text><text x="870" y="192">25</text><text x="945" y="192">26</text></g>
+ </g>
+</g>
+<rect x="55" y="415" width="990" height="45" rx="12" fill="#edf3ee"/><text x="75" y="443" font-family="Arial,sans-serif" font-size="12" fill="#66756c">Contoh: P = 16 · R = 18 · A = 1. Pisahkan angka agar pasangan tetap mudah dibaca.</text>
+</svg>

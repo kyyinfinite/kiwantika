@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="t d">
+<title id="t">Sandi Kotak 1, 2, dan 3</title><desc id="d">Tiga kartu visual untuk memahami keluarga geometri sandi kotak.</desc>
+<rect width="1200" height="720" rx="32" fill="#f7f4ec"/>
+<text x="60" y="62" font-family="Arial,sans-serif" font-size="34" font-weight="800" fill="#173d2b">SANDI KOTAK 1 · 2 · 3</text>
+<text x="60" y="92" font-family="Arial,sans-serif" font-size="16" fill="#66756c">Kenali geometri dan baca kunci sebelum melakukan decoding.</text>
+<g transform="translate(45 130)"><rect width="350" height="445" rx="22" fill="#fff" stroke="#cfdad1"/>
+<text x="24" y="42" font-family="Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="2" fill="#1f6847">01 · KOTAK 1</text><text x="24" y="68" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#173d2b">Grid + silang</text>
+<g transform="translate(95 110)" stroke="#173d2b" stroke-width="6" fill="none" stroke-linejoin="round"><rect width="160" height="160"/><path d="M80 0V160M0 80H160M0 0L160 160M160 0L0 160"/></g>
+<rect x="24" y="315" width="302" height="82" rx="14" fill="#edf3ee"/><text x="42" y="343" font-family="Arial,sans-serif" font-size="13" font-weight="800" fill="#173d2b">Fokus belajar</text><text x="42" y="366" font-family="Arial,sans-serif" font-size="12" fill="#66756c">Bentuk garis, titik, dan posisi.</text><text x="42" y="385" font-family="Arial,sans-serif" font-size="12" fill="#66756c">Gunakan kunci yang diberikan.</text></g>
+<g transform="translate(425 130)"><rect width="350" height="445" rx="22" fill="#fff" stroke="#cfdad1"/>
+<text x="24" y="42" font-family="Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="2" fill="#1f6847">02 · KOTAK 2</text><text x="24" y="68" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#173d2b">Grid 3 × 3</text>
+<g transform="translate(95 105)" stroke="#173d2b" stroke-width="6" fill="none"><rect width="160" height="160"/><path d="M53.33 0V160M106.66 0V160M0 53.33H160M0 106.66H160"/></g>
+<rect x="24" y="315" width="302" height="82" rx="14" fill="#edf3ee"/><text x="42" y="343" font-family="Arial,sans-serif" font-size="13" font-weight="800" fill="#173d2b">Fokus belajar</text><text x="42" y="366" font-family="Arial,sans-serif" font-size="12" fill="#66756c">Kelompokkan simbol berdasarkan</text><text x="42" y="385" font-family="Arial,sans-serif" font-size="12" fill="#66756c">konvensi kunci pada latihan.</text></g>
+<g transform="translate(805 130)"><rect width="350" height="445" rx="22" fill="#fff" stroke="#cfdad1"/>
+<text x="24" y="42" font-family="Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="2" fill="#1f6847">03 · KOTAK 3</text><text x="24" y="68" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#173d2b">Grid + belah ketupat</text>
+<g transform="translate(95 105)" stroke="#173d2b" stroke-width="6" fill="none" stroke-linejoin="round"><rect x="25" y="25" width="110" height="110"/><path d="M80 25V135M25 80H135M80 0L160 80L80 160L0 80Z"/></g>
+<rect x="24" y="315" width="302" height="82" rx="14" fill="#edf3ee"/><text x="42" y="343" font-family="Arial,sans-serif" font-size="13" font-weight="800" fill="#173d2b">Fokus belajar</text><text x="42" y="366" font-family="Arial,sans-serif" font-size="12" fill="#66756c">Kenali keluarga bentuk sebelum</text><text x="42" y="385" font-family="Arial,sans-serif" font-size="12" fill="#66756c">mencocokkan simbol dengan tabel.</text></g>
+<rect x="45" y="605" width="1110" height="72" rx="18" fill="#1f6847"/><text x="70" y="634" font-family="Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="1.5" fill="#dcefe2">CATATAN VERIFIKASI</text><text x="70" y="657" font-family="Arial,sans-serif" font-size="12" fill="#eef7f0">Variasi kunci dapat digunakan pada latihan. Jadikan kunci soal/pembina sebagai acuan decoding.</text>
+</svg>

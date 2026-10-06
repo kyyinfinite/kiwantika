@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, NavLink, Link, Outlet, useLocation } from
 import { LogIn, Menu, Shield, UserRound, X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, type ComponentType, type ReactNode } from 'react'
 import { HomePage, AboutPage, NewsPage, CalendarPage, GalleryPage, RegistrationPage, LoginPage, NotFoundPage } from '../features/public/pages'
+import { PramukaLearningPage } from '../features/learning/pages'
 import { ErrorBoundary, RouteProgress } from '../components/feedback'
 import { AuthProvider, ProtectedRoute, StaffRoute, useAuth } from '../features/auth/AuthProvider'
 import '../styles/app.css'
@@ -37,7 +38,7 @@ function DeferredAssistant() {
 
 const pageTitles: Array<[string, string]> = [
   ['/tentang', 'Tentang'], ['/berita', 'Berita'], ['/kalender', 'Kalender'], ['/galeri', 'Galeri'],
-  ['/daftarkiwantika', 'Pendaftaran'], ['/masuk', 'Masuk'], ['/absen', 'Absensi'],
+  ['/daftarkiwantika', 'Pendaftaran'], ['/belajar-pramuka', 'Belajar Pramuka'], ['/masuk', 'Masuk'], ['/absen', 'Absensi'],
   ['/dashboard', 'Ruang Anggota'], ['/admin', 'Panel Admin'],
 ]
 
@@ -152,7 +153,7 @@ function Shell() {
     <a className="skip-link" href="#konten">Lewati ke konten</a>
     <header className={scrolled ? 'site-header is-scrolled' : 'site-header'}><div className="wrap header-inner">
       <Link to="/" className="brand" onClick={()=>setOpen(false)}><span className="brand-mark brand-image"><img src="/media/kiwantika-logo.png" alt="" onError={(event)=>{event.currentTarget.style.display='none'}}/><b>K</b></span><span><strong>KIWANTIKA</strong><small>SMAN 10 GARUT</small></span></Link>
-      <nav ref={navRef} id="menu-utama" aria-label="Navigasi utama" className={open ? 'main-nav open' : 'main-nav'}>{nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/' } onClick={()=>setOpen(false)}>{label}</NavLink>)}<NavLink to="/daftarkiwantika" onClick={()=>setOpen(false)}>Daftar KIWANTIKA</NavLink>{user?<><NavLink to="/dashboard" onClick={()=>setOpen(false)}><UserRound size={16}/> Dashboard</NavLink>{isStaff&&<NavLink to="/admin" onClick={()=>setOpen(false)}><Shield size={16}/> Admin</NavLink>}</>:<NavLink to="/masuk" onClick={()=>setOpen(false)}><LogIn size={16}/> Masuk</NavLink>}</nav>
+      <nav ref={navRef} id="menu-utama" aria-label="Navigasi utama" className={open ? 'main-nav open' : 'main-nav'}>{nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/' } onClick={()=>setOpen(false)}>{label}</NavLink>)}<NavLink to="/daftarkiwantika" onClick={()=>setOpen(false)}>Daftar KIWANTIKA</NavLink><NavLink to="/belajar-pramuka" onClick={()=>setOpen(false)}>Belajar Pramuka</NavLink>{user?<><NavLink to="/dashboard" onClick={()=>setOpen(false)}><UserRound size={16}/> Dashboard</NavLink>{isStaff&&<NavLink to="/admin" onClick={()=>setOpen(false)}><Shield size={16}/> Admin</NavLink>}</>:<NavLink to="/masuk" onClick={()=>setOpen(false)}><LogIn size={16}/> Masuk</NavLink>}</nav>
       <button className="mobile-menu" aria-label={open ? 'Tutup menu' : 'Buka menu'} aria-expanded={open} aria-controls="menu-utama" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button>
     </div></header>
     <RouteMotion/>
@@ -161,6 +162,6 @@ function Shell() {
   </>
 }
 
-export function App(){return <BrowserRouter><RouteEffects/><AuthProvider><Routes><Route element={<Shell/>}><Route path="/" element={<HomePage/>}/><Route path="/tentang" element={<AboutPage/>}/><Route path="/berita" element={<NewsPage/>}/><Route path="/berita/:slug" element={<NewsPage detail/>}/><Route path="/kalender" element={<CalendarPage/>}/><Route path="/galeri" element={<GalleryPage/>}/><Route path="/daftarkiwantika" element={<RegistrationPage/>}/><Route path="/daftarkiwantika/:slug" element={<RegistrationPage/>}/><Route path="/masuk" element={<LoginPage/>}/><Route path="/dashboard" element={<ProtectedRoute><MemberDashboard/></ProtectedRoute>}/>
+export function App(){return <BrowserRouter><RouteEffects/><AuthProvider><Routes><Route element={<Shell/>}><Route path="/" element={<HomePage/>}/><Route path="/tentang" element={<AboutPage/>}/><Route path="/berita" element={<NewsPage/>}/><Route path="/berita/:slug" element={<NewsPage detail/>}/><Route path="/kalender" element={<CalendarPage/>}/><Route path="/galeri" element={<GalleryPage/>}/><Route path="/daftarkiwantika" element={<RegistrationPage/>}/><Route path="/belajar-pramuka" element={<PramukaLearningPage/>}/><Route path="/daftarkiwantika/:slug" element={<RegistrationPage/>}/><Route path="/masuk" element={<LoginPage/>}/><Route path="/dashboard" element={<ProtectedRoute><MemberDashboard/></ProtectedRoute>}/>
 <Route path="/absen/:token" element={<AttendancePage/>}/><Route path="/dashboard/profil" element={<ProtectedRoute><ProfilePage/></ProtectedRoute>}/><Route path="/dashboard/perizinan" element={<ProtectedRoute><PermissionPage/></ProtectedRoute>}/><Route path="/admin" element={<StaffRoute><AdminDashboard/></StaffRoute>}/>
 <Route path="/admin/absensi" element={<StaffRoute><AdminAttendancePage/></StaffRoute>}/><Route path="/admin/perizinan" element={<StaffRoute><PermissionManager/></StaffRoute>}/><Route path="/admin/anggota" element={<StaffRoute><MemberManager/></StaffRoute>}/><Route path="/admin/formulir" element={<StaffRoute><AdminListPage kind="formulir"/></StaffRoute>}/><Route path="/admin/formulir/baru" element={<StaffRoute><FormManager/></StaffRoute>}/><Route path="/admin/formulir/:id" element={<StaffRoute><FormManager/></StaffRoute>}/><Route path="/admin/berita" element={<StaffRoute><AdminListPage kind="berita"/></StaffRoute>}/><Route path="/admin/berita/baru" element={<StaffRoute><AdminListPage kind="berita"/></StaffRoute>}/><Route path="/admin/kegiatan" element={<StaffRoute><AdminListPage kind="kegiatan"/></StaffRoute>}/><Route path="/admin/galeri" element={<StaffRoute><AdminListPage kind="galeri"/></StaffRoute>}/><Route path="*" element={<NotFoundPage/>}/></Route></Routes></AuthProvider></BrowserRouter>}
