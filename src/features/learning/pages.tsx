@@ -1,8 +1,9 @@
-import { BookOpen, Check, ChevronLeft, ChevronRight, Clock3, Compass, ExternalLink, Flag, Layers3, RotateCcw, Sparkles, Trophy, Zap } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { BookOpen, Check, ChevronLeft, ChevronRight, Clock3, ExternalLink, Layers3, RotateCcw, Sparkles, Trophy } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { gsap } from '../../lib/motion'
 import { useGsapEffect } from '../../hooks/useGsapEffect'
+import { InteractivePramukaLab } from './InteractiveLab'
 
 type Quiz = { q: string; options: string[]; answer: number; explanation: string }
 type Slide = { eyebrow: string; title: string; body: string; points?: string[]; visual?: string; visualAlt?: string }
@@ -306,75 +307,6 @@ export function PramukaLearningPage() {
   </section>
 }
 
-
-const MORSE_MAP: Record<string, string> = {
-  A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.', F: '..-.', G: '--.', H: '....', I: '..', J: '.---', K: '-.-', L: '.-..', M: '--',
-  N: '-.', O: '---', P: '.--.', Q: '--.-', R: '.-.', S: '...', T: '-', U: '..-', V: '...-', W: '.--', X: '-..-', Y: '-.--', Z: '--..',
-  '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.'
-}
-const MORSE_REVERSE = Object.fromEntries(Object.entries(MORSE_MAP).map(([k,v]) => [v,k])) as Record<string,string>
-
-function InteractivePramukaLab() {
-  const [tab, setTab] = useState<'morse'|'semaphore'|'cipher'|'compass'>('morse')
-  const [morseText, setMorseText] = useState('KIWANTIKA')
-  const [morseInput, setMorseInput] = useState('')
-  const [semaphoreAngle, setSemaphoreAngle] = useState(45)
-  const [semaphoreAngle2, setSemaphoreAngle2] = useState(135)
-  const [cipherMode, setCipherMode] = useState<'AN'|'AZ'|'NUMBER'>('AN')
-  const [cipherText, setCipherText] = useState('PRAMUKA')
-  const [bearing, setBearing] = useState(0)
-  const [targetBearing, setTargetBearing] = useState(135)
-
-  const morseEncoded = morseText.toUpperCase().split('').map(ch => ch === ' ' ? '/' : MORSE_MAP[ch] || ch).join(' ')
-  const morseDecoded = morseInput.trim().split(/\s+/).map(token => token === '/' ? ' ' : MORSE_REVERSE[token] || '·').join('')
-  const cipherEncoded = cipherText.toUpperCase().split('').map(ch => {
-    if (!/[A-Z]/.test(ch)) return ch
-    if (cipherMode === 'AN') return String.fromCharCode(65 + ((ch.charCodeAt(0)-65+13)%26))
-    if (cipherMode === 'AZ') return String.fromCharCode(90 - (ch.charCodeAt(0)-65))
-    return String(ch.charCodeAt(0)-64)
-  }).join(cipherMode === 'NUMBER' ? ' · ' : '')
-  const compassDelta = (targetBearing - bearing + 360) % 360
-  const compassMessage = compassDelta === 0 ? 'Tepat sasaran' : `Putar ${compassDelta}° searah jarum jam`
-
-  const rotate = (value: number, delta: number) => (value + delta + 360) % 360
-  const tabs = [
-    { id:'morse' as const, label:'Morse', icon:<Zap size={17}/> },
-    { id:'semaphore' as const, label:'Semaphore', icon:<Flag size={17}/> },
-    { id:'cipher' as const, label:'Sandi', icon:<Layers3 size={17}/> },
-    { id:'compass' as const, label:'Kompas', icon:<Compass size={17}/> },
-  ]
-
-  return <section className="section learning-interactive-lab" id="lab"><div className="wrap">
-    <div className="learning-section-head" data-learning-reveal>
-      <div><span className="eyebrow">INTERACTIVE LAB · LEARNING BY DOING</span><h2>Jangan cuma<br/><em>membaca.</em> Coba.</h2></div>
-      <p>Empat simulator untuk melatih pola pikir: ubah teks menjadi Morse, eksplorasi sudut semaphore, pecahkan substitusi, lalu putar kompas menuju bearing target.</p>
-    </div>
-    <div className="learning-lab-tabs" role="tablist" aria-label="Pramuka Interactive Lab">
-      {tabs.map(item => <button key={item.id} className={tab===item.id?'is-active':''} onClick={()=>setTab(item.id)} role="tab" aria-selected={tab===item.id}>{item.icon}{item.label}</button>)}
-    </div>
-
-    {tab==='morse' && <div className="learning-lab-panel">
-      <div className="lab-copy"><span className="eyebrow">01 · MORSE LAB</span><h3>Encoder + decoder</h3><p>Ketik pesan untuk melihat pola Morse. Untuk mode balik, masukkan kelompok titik-garis yang dipisahkan spasi.</p><label>Pesan teks<input value={morseText} onChange={e=>setMorseText(e.target.value.slice(0,80))} placeholder="Contoh: KIWANTIKA" /></label><div className="lab-output"><small>HASIL MORSE</small><strong>{morseEncoded || '—'}</strong></div><label>Uji decode<input value={morseInput} onChange={e=>setMorseInput(e.target.value)} placeholder="-.- .. .-- .- ..." /></label><div className="lab-feedback"><span>HASIL</span><b>{morseInput ? morseDecoded : 'Masukkan pola Morse'}</b></div></div>
-      <div className="lab-visual lab-morse-visual"><div className="morse-beacon"><i/><i/><i/><i/><i/></div><div className="morse-stream">{morseEncoded.split(' ').map((token,i)=><span key={`${token}-${i}`}>{token}</span>)}</div><p>Gunakan pola sebagai latihan memori, bukan sekadar menghafal tabel.</p></div>
-    </div>}
-
-    {tab==='semaphore' && <div className="learning-lab-panel">
-      <div className="lab-copy"><span className="eyebrow">02 · SEMAPHORE LAB</span><h3>Eksplorasi 8 arah</h3><p>Geser slider untuk mengubah dua arah bendera. Sistem visual memakai 8 sektor berjarak 45°. Ini adalah simulator geometri; chart alfabet resmi tetap menjadi acuan untuk decoding.</p><label>Bendera kiri · {semaphoreAngle}°<input type="range" min="0" max="315" step="45" value={semaphoreAngle} onChange={e=>setSemaphoreAngle(Number(e.target.value))}/></label><label>Bendera kanan · {semaphoreAngle2}°<input type="range" min="0" max="315" step="45" value={semaphoreAngle2} onChange={e=>setSemaphoreAngle2(Number(e.target.value))}/></label><div className="lab-feedback"><span>GEOMETRI</span><b>{semaphoreAngle}° + {semaphoreAngle2}°</b><small>Interval sektor: 45°</small></div></div>
-      <div className="lab-visual semaphore-stage"><div className="semaphore-wheel"><div className="semaphore-cross x"/><div className="semaphore-cross y"/><div className="semaphore-arm arm-a" style={{transform:`rotate(${semaphoreAngle}deg)`}}><span/></div><div className="semaphore-arm arm-b" style={{transform:`rotate(${semaphoreAngle2}deg)`}}><span/></div><b>N</b><b>E</b><b>S</b><b>W</b></div><p>Petunjuk: ubah satu tangan setiap kali dan amati perubahan sudut. Untuk mengenali huruf, cocokkan kembali dengan chart semaphore.</p></div>
-    </div>}
-
-    {tab==='cipher' && <div className="learning-lab-panel">
-      <div className="lab-copy"><span className="eyebrow">03 · SANDI LAB</span><h3>Substitusi dalam satu layar</h3><p>Pilih AN, AZ, atau angka. Simulator ini membantu memahami konsep pasangan alfabet; kunci latihan harus selalu disebutkan agar tidak terjadi salah tafsir variasi sandi.</p><div className="lab-segmented">{(['AN','AZ','NUMBER'] as const).map(mode=><button key={mode} className={cipherMode===mode?'is-active':''} onClick={()=>setCipherMode(mode)}>{mode==='NUMBER'?'A=1':mode}</button>)}</div><label>Teks latihan<input value={cipherText} onChange={e=>setCipherText(e.target.value.toUpperCase().slice(0,40))}/></label><div className="lab-output"><small>HASIL TRANSFORMASI</small><strong>{cipherEncoded || '—'}</strong></div></div>
-      <div className="lab-visual cipher-visual"><div className="alphabet-row">{'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter,i)=><span key={letter}><b>{letter}</b><small>{cipherMode==='AN'?String.fromCharCode(65 + ((i+13)%26)):cipherMode==='AZ'?String.fromCharCode(90-i):i+1}</small></span>)}</div><div className="cipher-lock"><Layers3 size={38}/><strong>Kunci dulu.</strong><span>Baru pecahkan.</span></div></div>
-    </div>}
-
-    {tab==='compass' && <div className="learning-lab-panel">
-      <div className="lab-copy"><span className="eyebrow">04 · COMPASS LAB</span><h3>Putar bezel, cari bearing</h3><p>Geser kontrol untuk mengubah arah kompas. Tantangannya adalah membuat arah saat ini sama dengan target. Ini melatih konsep heading dan sudut tanpa menggantikan latihan lapangan.</p><label>Arah kompas · {bearing}°<input type="range" min="0" max="359" value={bearing} onChange={e=>setBearing(Number(e.target.value))}/></label><label>Target · {targetBearing}°<input type="range" min="0" max="359" value={targetBearing} onChange={e=>setTargetBearing(Number(e.target.value))}/></label><div className={`lab-feedback ${compassDelta===0?'success':''}`}><span>FEEDBACK</span><b>{compassMessage}</b><small>Target dihitung sebagai bearing 0–359°.</small></div></div>
-      <div className="lab-visual compass-stage"><div className="digital-compass" style={{'--bearing':`${bearing}deg`} as React.CSSProperties}><div className="compass-cardinal n">N</div><div className="compass-cardinal e">E</div><div className="compass-cardinal s">S</div><div className="compass-cardinal w">W</div><div className="compass-ticks">{Array.from({length:36}).map((_,i)=><i key={i} style={{transform:`rotate(${i*10}deg)`}}/>)}</div><div className="compass-needle"/><div className="compass-center"/></div><div className="bearing-readout"><small>BEARING</small><strong>{String(bearing).padStart(3,'0')}°</strong></div><button className="btn secondary" onClick={()=>setBearing(targetBearing)}>Set ke target</button><button className="btn primary" onClick={()=>{setTargetBearing(Math.floor(Math.random()*36)*10); setBearing(0)}}>Acak tantangan</button></div>
-    </div>}
-    <div className="learning-lab-note"><Sparkles size={16}/><span>Lab ini adalah simulator pembelajaran. Kompetensi lapangan tetap diverifikasi melalui latihan dan pembina, bukan hanya hasil simulator.</span></div>
-  </div></section>
-}
 
 function VisualCard({ wide, eyebrow, title, text, image, alt, meta }: { wide?: boolean; eyebrow: string; title: string; text: string; image: string; alt: string; meta: string[] }) {
   return <article className={`learning-visual-card ${wide ? 'learning-visual-card-wide' : ''}`} data-learning-reveal><div className="learning-visual-copy"><span className="eyebrow">{eyebrow}</span><h3>{title}</h3><p>{text}</p><div className="learning-visual-meta">{meta.map(item => <span key={item}>{item}</span>)}</div></div><div className="learning-visual-image"><img src={image} alt={alt} loading="lazy"/></div></article>
