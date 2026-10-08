@@ -7,6 +7,7 @@ import { useAuth } from '../auth/AuthProvider'
 import { useConfirm } from '../../components/feedback'
 import { Notice, Panel, StatCard, dateOnly, rupiah, todayLocal } from '../../components/mini'
 import { TableSkeleton } from '../../components/Skeleton'
+import { downloadTableXlsx } from '../events/download'
 
 type Due = { id: string; amount: number; status: string; paid_at: string | null; member: { full_name: string; display_name: string | null; class_name: string | null } | null }
 type Tx = { id: string; type: 'pemasukan' | 'pengeluaran'; category: string; amount: number; description: string | null; transaction_date: string; due_id: string | null }
@@ -83,12 +84,20 @@ export function AdminFinancePage() {
   }
 
   const exportTx = async () => {
-    const XLSX = await import('xlsx')
-    const book = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(book, XLSX.utils.json_to_sheet((txs ?? []).map(row => ({
-      Tanggal: row.transaction_date, Jenis: row.type, Kategori: row.category, Nominal: row.amount, Keterangan: row.description ?? '',
-    }))), 'Transaksi')
-    XLSX.writeFile(book, 'kas-kiwantika.xlsx')
+    const list = txs ?? []
+    const income = list.filter(row => row.type === 'pemasukan').reduce((sum, row) => sum + row.amount, 0)
+    const expense = list.filter(row => row.type === 'pengeluaran').reduce((sum, row) => sum + row.amount, 0)
+    try {
+      await downloadTableXlsx({
+        filename: `kas-kiwantika-${new Date().toISOString().slice(0, 10)}.xlsx`, sheet: 'Kas', title: 'BUKU KAS KIWANTIKA',
+        subtitles: [`Pemasukan ${rupiah(income)} • Pengeluaran ${rupiah(expense)} • Selisih ${rupiah(income - expense)}`],
+        columns: [
+          { header: 'No', width: 6, align: 'center' }, { header: 'Tanggal', width: 14, align: 'center' }, { header: 'Jenis', width: 14, align: 'center' },
+          { header: 'Kategori', width: 22, wrap: true }, { header: 'Keterangan', width: 40, wrap: true }, { header: 'Nominal (Rp)', width: 18, align: 'right' },
+        ],
+        rows: list.map((row, index) => [index + 1, dateOnly(row.transaction_date), row.type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran', row.category, row.description ?? '', row.type === 'pemasukan' ? row.amount : -row.amount]),
+      })
+    } catch (e) { setError(errorText(e)) }
   }
 
   const paid = (dues ?? []).filter(item => item.status === 'lunas')

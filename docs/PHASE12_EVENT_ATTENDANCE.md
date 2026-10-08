@@ -34,7 +34,7 @@ Menu, halaman anggota, dan panel dashboard Perizinan dihapus. Alamat lama `/dash
 
 ## Belum diverifikasi saat runtime
 - Migrasi 0012 belum pernah dijalankan (tidak ada PostgreSQL di lingkungan pengembangan). Jalankan di staging dulu, lalu cek `supabase/tests/p2_phase11_checklist.sql` dan daftar di bawah.
-- Yang sudah dites otomatis: logika ekspor (`npm run test:exports`, 19 tes) dan basis pengetahuan Tunas. Pembuatan file `.xlsx` di browser dan `npm run build` penuh belum dijalankan.
+- Yang sudah dites otomatis: logika ekspor (`npm run test:exports`) dan basis pengetahuan Tunas. Pembuatan file `.xlsx` di browser dan `npm run build` penuh belum dijalankan.
 
 Uji manual setelah deploy:
 1. Buat kegiatan terbit di kalender, ajukan izin sebagai anggota, setujui sebagai admin: anggota tampil "Izin" di `/admin/rekap/ID` dan di riwayatnya.
@@ -42,3 +42,12 @@ Uji manual setelah deploy:
 3. Ubah status manual satu anggota, unduh Excel kegiatan dan Excel utuh, cek sheet dan matriks.
 4. Data lama: cek riwayat izin lama sudah muncul di `/admin/izin`.
 5. Kegiatan dengan dua sesi: anggota yang hadir di salah satunya tetap Hadir.
+
+## Tampilan Excel (pembaruan)
+Semua file Excel kini diberi format: judul digabung dan rata tengah, header hijau tebal, border tipis, teks panjang otomatis dibungkus dengan tinggi baris menyesuaikan, baris selang-seling, kolom status berwarna (hadir hijau, terlambat kuning, izin biru, sakit ungu, alpa merah), kolom persen berwarna menurut nilai, baris TOTAL pada ringkasan, header dan kolom nama dibekukan, filter otomatis, dan pengaturan cetak A4 landscape muat satu halaman lebar. Sheet Matriks memakai header diputar 90 derajat dan kode warna per sel, lengkap dengan keterangan.
+
+Berlaku untuk: Excel utuh dan Excel per kegiatan (`/admin/rekap`), Excel detail kegiatan, Excel per sesi absensi, dan Excel buku kas.
+
+CSV tidak bisa memuat gabung sel, border, atau warna karena formatnya teks polos. CSV tetap dipertahankan sebagai data mentah (satu baris judul kolom, pemisah titik koma, UTF-8) untuk diimpor ke aplikasi lain. Untuk tampilan rapi, pakai Excel.
+
+Penulisan gaya memakai pustaka `exceljs` (dependensi baru, dimuat hanya saat tombol ekspor ditekan). Jalankan `npm install` sebelum build. Tata letak dibuat oleh `exportLayout.ts` (dites otomatis, 34 tes di `npm run test:exports`); `renderXlsx.ts` hanya menerjemahkannya ke ExcelJS dan belum pernah dijalankan di lingkungan pengembangan. Buka satu file hasil ekspor setelah deploy dan cek tampilannya di Excel dan Google Sheets.

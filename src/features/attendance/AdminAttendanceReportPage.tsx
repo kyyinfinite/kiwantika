@@ -5,6 +5,8 @@ import { errorText, rpc } from '../../lib/rpc'
 import { Notice, Panel, StatCard, dateTime } from '../../components/mini'
 import { TableSkeleton } from '../../components/Skeleton'
 import { STATUS_LABEL, STATUS_OPTIONS, sessionPhase, type Report } from './api'
+import { downloadSessionXlsx } from '../events/download'
+import { fileSlug } from '../events/exportData'
 
 const FILTERS = ['semua', 'hadir', 'terlambat', 'izin', 'sakit', 'belum_hadir', 'alpa'] as const
 
@@ -38,14 +40,19 @@ export function AdminAttendanceReportPage() {
 
   const exportXlsx = async () => {
     if (!report) return
-    const XLSX = await import('xlsx')
-    const sheet = XLSX.utils.json_to_sheet(report.rows.map(row => ({
-      Nama: row.name, Kelas: row.class_name ?? '', Kelompok: row.group_name ?? '', Status: label(row.status),
-      Metode: row.method ?? '', Waktu: row.checked_in_at ? dateTime(row.checked_in_at) : '', Catatan: row.note ?? '',
-    })))
-    const book = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(book, sheet, 'Absensi')
-    XLSX.writeFile(book, `absensi-${report.session.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.xlsx`)
+    try {
+      await downloadSessionXlsx({
+        filename: `absensi-${fileSlug(report.session.title)}.xlsx`, sheet: 'Absensi', title: report.session.title,
+        subtitles: [`${dateTime(report.session.starts_at)} WIB • terlambat setelah ${report.session.late_after_minutes} menit`],
+        statuses: report.rows,
+        columns: [
+          { header: 'No', width: 6, align: 'center' }, { header: 'Nama', width: 30 }, { header: 'Kelas', width: 11, align: 'center' },
+          { header: 'Kelompok', width: 14, align: 'center' }, { header: 'Status', width: 14, kind: 'status' }, { header: 'Waktu absen', width: 20, align: 'center' },
+          { header: 'Metode', width: 14, align: 'center' }, { header: 'Catatan', width: 34, wrap: true },
+        ],
+        rows: report.rows.map((row, index) => [index + 1, row.name, row.class_name ?? '', row.group_name ?? '', label(row.status), row.checked_in_at ? dateTime(row.checked_in_at) : '', row.method ?? '', row.note ?? '']),
+      })
+    } catch (e) { setError(errorText(e)) }
   }
 
   return <div className="wrap page-pad">

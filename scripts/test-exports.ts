@@ -2,6 +2,7 @@ import {
   detailRows, eventRowsFromMaster, fileSlug, masterSummaryRows, matrixRows, memberTotalsRows, percentage, sheetName, toCsv,
   type MasterReport,
 } from '../src/features/events/exportData.js'
+import { COLOR, masterSheets, eventReportSheets, tableSheet } from '../src/features/events/exportLayout.js'
 
 let failed = 0
 const check = (name: string, ok: boolean, detail = '') => {
@@ -61,6 +62,38 @@ const csv = toCsv([['a', 'b;c', 'd"e'], ['x\ny', null, 3]])
 check('csv: pemisah titik koma dan kutip digandakan', csv.startsWith('a;"b;c";"d""e"'))
 check('csv: baris baru di dalam sel dikutip', csv.includes('"x\ny";;3'))
 check('slug file aman', fileSlug('Rapat; "Evaluasi" 2026!') === 'rapat-evaluasi-2026')
+
+const sheets = masterSheets(master, true)
+check('sheet master: ringkasan, anggota, matriks, detail + 2 sheet kegiatan', sheets.length === 6)
+check('nama sheet unik dan <= 31', new Set(sheets.map(sheet => sheet.name.toLowerCase())).size === sheets.length && sheets.every(sheet => sheet.name.length <= 31))
+check('semua baris selebar kolom', sheets.every(sheet => sheet.rows.every(row => row.length === sheet.widths.length)))
+check('tinggi baris satu per baris', sheets.every(sheet => sheet.heights.length === sheet.rows.length))
+check('merge selalu dalam batas', sheets.every(sheet => sheet.merges.every(([t, l, b, r]) => t >= 1 && l >= 1 && b <= sheet.rows.length && r <= sheet.widths.length && t <= b && l <= r)))
+check('judul digabung dan rata tengah', sheets.every(sheet => sheet.merges.some(m => m[0] === 1 && m[1] === 1 && m[3] === sheet.widths.length) && sheet.rows[0][0].align === 'center'))
+const summarySheet = sheets[0]
+const headerIdx = summarySheet.filterRow! - 1
+check('header berwarna, tebal, berborder', summarySheet.rows[headerIdx].every(cell => cell.fill === COLOR.green && cell.bold && cell.border))
+const bodyRow = summarySheet.rows[headerIdx + 1]
+check('isi berborder dan nama kegiatan di-wrap', bodyRow.every(cell => cell.border) && bodyRow[2].wrap === true)
+const totalRow = summarySheet.rows[summarySheet.rows.length - 1]
+check('baris total menjumlah hadir dan digabung', totalRow[0].v === 'TOTAL' && totalRow[6].v === 2 && totalRow[7].v === 1 && summarySheet.merges.some(m => m[0] === summarySheet.rows.length && m[3] === 5))
+check('kolom persen berwarna sesuai nilai', bodyRow[11].fill === COLOR.hadir && summarySheet.rows[headerIdx + 2][11].fill === COLOR.terlambat || summarySheet.rows[headerIdx + 2][11].fill === COLOR.alpa)
+const matrixSpec = sheets[2]
+check('matriks: kolom dibekukan dan header diputar', matrixSpec.freeze?.col === 2 && matrixSpec.rows[matrixSpec.freeze!.row - 1][2].rotate === 90)
+const matrixBodyRow = matrixSpec.rows[matrixSpec.freeze!.row]
+check('matriks: status berwarna', matrixBodyRow[2].v === 'H' && matrixBodyRow[2].fill === COLOR.hadir && matrixSpec.rows[matrixSpec.freeze!.row + 1][2].fill === COLOR.terlambat)
+const detailSpec = sheets[3]
+check('detail: status berwarna', detailSpec.rows[detailSpec.filterRow!].some(cell => cell.fill === COLOR.hadir))
+const eventSpec = sheets[4]
+check('sheet kegiatan: ringkasan angka di atas daftar', eventSpec.rows.some(row => row[0].v === 'Hadir') && eventSpec.rows.some(row => row[0].v === 1 && row[1].v === 1 && row[2].v === 0))
+const long = tableSheet({ name: 'x', title: 'T', columns: [{ header: 'A', width: 10, wrap: true }], rows: [['kata '.repeat(30)]] })
+check('baris panjang otomatis lebih tinggi', (long.heights[long.heights.length - 1] ?? 0) > 40)
+const eventReport = eventReportSheets({
+  event: { id: 'e', title: 'Latihan', start_at: '2026-10-03T09:00:00Z', end_at: null, location: 'Aula', event_type: 'latihan' }, sessions: [],
+  leaves: [{ id: 'l', member_id: 'm', name: 'Cici', type: 'sakit', reason: 'Demam', status: 'disetujui', review_note: null, created_at: '2026-10-02T01:00:00Z' }],
+  rows: [{ member_id: 'm', name: 'Cici', class_name: null, group_name: null, status: 'sakit', checked_in_at: null, method: 'leave', note: 'Demam' }],
+})
+check('laporan kegiatan: sheet kehadiran dan izin', eventReport.length === 2 && eventReport[1].name === 'Izin dan sakit')
 
 console.log(failed ? `\n${failed} pengujian gagal` : '\nSemua pengujian lulus')
 process.exit(failed ? 1 : 0)
