@@ -1,0 +1,18 @@
+-- Phase 11 verification checklist (run manually in staging after migration 0011).
+-- 1. check_in_attendance, create_attendance_session, get_attendance_session are not executable by authenticated or anon.
+-- 2. create_attendance_session_v2 with mode rotating returns id only (token and pin are null).
+-- 3. issue_attendance_qr fails for a role without manage_attendance.
+-- 4. check_in_attendance_v2 with a code older than two slots returns code invalid_code and logs an attempt.
+-- 5. Five failed attempts return code locked even if the sixth code is valid.
+-- 6. A suspended, inactive, or alumni profile gets not_eligible.
+-- 7. Approving a leave request with no session still shows izin or sakit in attendance_session_report for that Jakarta date.
+-- 8. set_due_paid(true) creates exactly one finance_transactions row with due_id; set_due_paid(false) deletes it.
+-- 9. admin_overview returns finance = null for a role without manage_finance.
+-- 10. private.attendance_session_secrets and private.attendance_attempts are not selectable by authenticated.
+select 1;
+-- Phase 12 additions:
+-- 11. submit_leave_request_v2 rejects an unpublished or management-only event (invalid_event) and a duplicate (duplicate).
+-- 12. After approval, event_attendance_report shows the member as izin or sakit even with no attendance session.
+-- 13. attendance_master_report returns cells whose count equals sum(expected) over events.
+-- 14. permission_requests cannot be inserted or updated by authenticated; leave_requests holds the migrated rows.
+-- 15. my_attendance_summary excludes events that ended before the member joined.

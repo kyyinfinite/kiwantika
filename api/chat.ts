@@ -1,3 +1,5 @@
+import { coreEvidence, exactAnswer, isPramukaTopic } from './_lib/pramuka-rag.js'
+
 const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions'
 const DEFAULT_MODELS = ['nvidia/nemotron-3-super-120b-a12b', 'meta/llama-3.3-70b-instruct', 'meta/llama-3.1-70b-instruct']
 const FIRST_TOKEN_TIMEOUT_MS = 25000
@@ -239,7 +241,10 @@ function buildSystemPrompt(context: string, pramukaContext: string, pramukaQuest
     '- Halaman Tentang masih menyiapkan profil pembina dan Dewan Ambalan (Coming Soon). Jangan menyebut nama pengurus.',
     '- Akui jika kamu tidak yakin. Kamu adalah AI dan bisa keliru; untuk hal penting, sarankan konfirmasi ke pengurus.',
     '- Jika pertanyaan kepramukaan tidak didukung oleh BASIS PENGETAHUAN TERUJI, katakan bahwa materi tersebut belum terverifikasi di basis Tunas dan jangan membuat jawaban faktual baru.',
-    '- Jika pengguna meminta isi atau makna Dasa Darma, jelaskan sepuluh nilai dari sumber terverifikasi. Jangan mengatakan materi belum tersedia jika sumber Dasa Darma ditemukan. Jika pengguna meminta kutipan redaksi resmi lengkap, arahkan ke URL sumber resmi dan jangan mengarang redaksi.',
+    '- Teks kode kehormatan (Dwisatya, Dwidarma, Trisatya, Dasadarma) yang ada di REFERENSI INTI harus disalin persis, tanpa mengubah kata atau urutan. Dasadarma berjumlah tepat 10; jika pengguna menyebut butir yang tidak ada, koreksi dengan sopan. Bedakan Trisatya Penggalang ("mempersiapkan diri membangun masyarakat") dari Trisatya Penegak/Pandega/dewasa ("ikut serta membangun masyarakat").',
+    '- Untuk penjelasan makna, boleh menguraikan dari kata pada teks resmi, tetapi nyatakan bahwa itu penjelasan, bukan bunyi resmi. Bedakan fakta dari penafsiran umum.',
+    '- Jangan menyebut nama pejabat yang sedang menjabat, jumlah anggota satuan, aturan terbaru, butir syarat SKU/SKK, urutan upacara, lirik lagu, atau kode semaphore dari ingatan. Hasil konversi otomatis (misalnya Morse) disalin apa adanya.',
+    '- Jika referensi menyebut sumber atau tanggal yang berbeda antardokumen, sampaikan perbedaannya.',
     '- Jangan menyatakan sebuah istilah, tingkatan, SKU, nomor keputusan, syarat, atau materi sebagai resmi bila tidak ada dukungan di sumber terverifikasi.',
     '- Jika ada perbedaan antar dokumen, sebutkan dokumen/tahun yang menjadi dasar jawaban dan jangan mencampur ketentuan tanpa penjelasan.',
     '',
@@ -250,7 +255,7 @@ function buildSystemPrompt(context: string, pramukaContext: string, pramukaQuest
     '- Untuk topik krisis keselamatan atau kesehatan, sarankan menghubungi guru, orang tua, atau layanan darurat setempat.',
     '',
     '',
-    'BASIS PENGETAHUAN TERUJI KEPRAMUKAAN:',
+    'BASIS PENGETAHUAN TERUJI KEPRAMUKAAN (REFERENSI INTI lebih diutamakan daripada SUMBER DATABASE bila berbeda):',
     pramukaContext || 'Tidak ada sumber kepramukaan yang cocok dengan pertanyaan ini.',
     pramukaQuestion ? '- ATURAN KHUSUS PERTANYAAN INI: jawab hanya dari basis pengetahuan teruji di atas. Jika basis tidak cukup, nyatakan belum terverifikasi.' : '- Pertanyaan ini bukan pertanyaan materi kepramukaan; gunakan basis hanya bila relevan.',
     '',
@@ -258,7 +263,9 @@ function buildSystemPrompt(context: string, pramukaContext: string, pramukaQuest
     '- /daftarkiwantika : formulir pendaftaran calon anggota. Kolom: nama, kelas, nomor HP, alasan bergabung, dan pernyataan sudah mendapat izin orang tua/wali.',
     '- /kalender : agenda kegiatan. /berita : berita dan cerita kegiatan. /galeri : dokumentasi foto. /tentang : identitas dan kepengurusan.',
     '- /masuk : login anggota dengan email atau akun Google; di ruang anggota tersedia profil, izin, dan absensi QR.',
-    '- Absensi dilakukan dengan memindai QR sesi dari pengurus dan memasukkan PIN.',
+    '- /belajar-pramuka : materi belajar interaktif (kode kehormatan, Morse, sandi, semaphore, kompas, peta, tali-temali). Arahkan ke sini untuk topik latihan visual.',
+    '- Absensi: pindai QR yang tampil di layar pembina (QR berganti tiap beberapa detik, jadi tidak bisa difoto lalu dikirim). Jika tidak bisa memindai, buka /absen dan masukkan kode 6 angka di layar. Sesi dengan QR tetap memakai PIN dari pembina.',
+    '- /dashboard/izin : ajukan izin atau sakit dengan memilih kegiatan dari kalender; pembina yang menyetujui dan namamu otomatis tercatat izin/sakit di rekap kegiatan itu. /dashboard/absensi : riwayat kehadiran per kegiatan.',
     '',
     `Waktu sekarang: ${now} WIB.`,
     '',
@@ -267,10 +274,10 @@ function buildSystemPrompt(context: string, pramukaContext: string, pramukaQuest
   ].join('\n')
 }
 
-async function callNvidia(model: string, messages: Array<{ role: string; content: string }>, apiKey: string, thinkingOff: boolean) {
+async function callNvidia(model: string, messages: Array<{ role: string; content: string }>, apiKey: string, thinkingOff: boolean, temperature: number) {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS)
-  const body: Record<string, unknown> = { model, messages, temperature: 0.5, top_p: 0.9, max_tokens: 900, stream: true }
+  const body: Record<string, unknown> = { model, messages, temperature, top_p: 0.9, max_tokens: 900, stream: true }
   if (thinkingOff) body.chat_template_kwargs = { enable_thinking: false }
   try {
     return await fetch(NVIDIA_URL, {
@@ -362,12 +369,26 @@ export async function POST(request: Request) {
   const messages = parseMessages(payload)
   if (!messages) return reply(400, { error: 'Pesan tidak valid atau terlalu panjang.' })
 
+  const exact = exactAnswer(messages)
+  if (exact) {
+    return new Response(exact, {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store, no-transform', 'X-Content-Type-Options': 'nosniff' },
+    })
+  }
+
   const context = await loadContext()
   const latestUserMessage = messages[messages.length - 1]?.content || ''
-  const pramukaQuestion = isPramukaKnowledgeQuestion(latestUserMessage)
-  const pramukaContext = pramukaQuestion ? await loadPramukaKnowledge(latestUserMessage) : ''
+  const core = coreEvidence(messages)
+  const pramukaQuestion = isPramukaKnowledgeQuestion(latestUserMessage) || isPramukaTopic(latestUserMessage) || core.hasEvidence
+  const databaseContext = pramukaQuestion ? await loadPramukaKnowledge(latestUserMessage) : ''
+  const pramukaContext = [
+    core.text && `REFERENSI INTI (teks resmi AD/ART dan UU 12/2010; salin persis bila diminta):\n${core.text}`,
+    databaseContext && `SUMBER DATABASE:\n${databaseContext}`,
+  ].filter(Boolean).join('\n\n')
   if (pramukaQuestion && !pramukaContext) {
-    return new Response('Maaf, materi kepramukaan untuk pertanyaan itu belum terverifikasi di basis pengetahuan Tunas. Saya tidak ingin mengarang materi. Silakan tanyakan topik yang sudah tersedia atau konfirmasi ke pembina/pengurus KIWANTIKA.', {
+    const hint = core.unavailable ? ' Untuk latihan visual seperti semaphore, sandi, kompas, dan tali-temali, buka halaman /belajar-pramuka.' : ''
+    return new Response(`Maaf, materi kepramukaan untuk pertanyaan itu belum terverifikasi di basis pengetahuan Tunas. Saya tidak ingin mengarang materi.${hint} Silakan tanyakan topik yang sudah tersedia atau konfirmasi ke pembina/pengurus KIWANTIKA.`, {
       status: 200,
       headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
     })
@@ -382,7 +403,7 @@ export async function POST(request: Request) {
     for (const thinkingOff of attempts) {
       let upstream: Response
       try {
-        upstream = await callNvidia(model, full, apiKey, thinkingOff)
+        upstream = await callNvidia(model, full, apiKey, thinkingOff, pramukaQuestion ? 0.2 : 0.5)
       } catch {
         lastStatus = 504
         break

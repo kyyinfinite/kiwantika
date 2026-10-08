@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, NavLink, Link, Outlet, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, NavLink, Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { LogIn, Menu, Shield, UserRound, X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, type ComponentType, type ReactNode } from 'react'
 import { HomePage, AboutPage, NewsPage, CalendarPage, GalleryPage, RegistrationPage, LoginPage, NotFoundPage } from '../features/public/pages'
@@ -8,6 +8,7 @@ import { AuthProvider, ProtectedRoute, StaffRoute, useAuth } from '../features/a
 import '../styles/app.css'
 import '../styles/kiwantika.css'
 import '../styles/polish.css'
+import '../styles/phase11.css'
 import { gsap, prefersReducedMotion } from '../lib/motion'
 
 function lazyNamed<K extends string>(loader: () => Promise<Record<K, ComponentType<any>>>, key: K) {
@@ -16,14 +17,21 @@ function lazyNamed<K extends string>(loader: () => Promise<Record<K, ComponentTy
 
 const MemberDashboard = lazyNamed(() => import('../features/member/pages'), 'MemberDashboard')
 const ProfilePage = lazyNamed(() => import('../features/member/pages'), 'ProfilePage')
-const PermissionPage = lazyNamed(() => import('../features/member/pages'), 'PermissionPage')
 const AdminDashboard = lazyNamed(() => import('../features/admin/pages'), 'AdminDashboard')
 const AdminListPage = lazyNamed(() => import('../features/admin/pages'), 'AdminListPage')
-const PermissionManager = lazyNamed(() => import('../features/admin/pages'), 'PermissionManager')
+const AdminEventRecapListPage = lazyNamed(() => import('../features/events/pages'), 'AdminEventRecapListPage')
+const AdminEventRecapDetailPage = lazyNamed(() => import('../features/events/pages'), 'AdminEventRecapDetailPage')
+const MyAttendancePage = lazyNamed(() => import('../features/events/pages'), 'MyAttendancePage')
 const MemberManager = lazyNamed(() => import('../features/admin/pages'), 'MemberManager')
 const FormManager = lazyNamed(() => import('../features/admin/form'), 'FormManager')
 const AttendancePage = lazyNamed(() => import('../features/attendance/pages'), 'AttendancePage')
 const AdminAttendancePage = lazyNamed(() => import('../features/attendance/pages'), 'AdminAttendancePage')
+const AttendanceCodePage = lazyNamed(() => import('../features/attendance/pages'), 'AttendanceCodePage')
+const AdminAttendanceDisplayPage = lazyNamed(() => import('../features/attendance/pages'), 'AdminAttendanceDisplayPage')
+const AdminAttendanceReportPage = lazyNamed(() => import('../features/attendance/pages'), 'AdminAttendanceReportPage')
+const LeavePage = lazyNamed(() => import('../features/leave/pages'), 'LeavePage')
+const AdminLeavePage = lazyNamed(() => import('../features/leave/pages'), 'AdminLeavePage')
+const AdminFinancePage = lazyNamed(() => import('../features/finance/pages'), 'AdminFinancePage')
 const AssistantWidget = lazy(() => import('../features/assistant/AssistantWidget'))
 
 function DeferredAssistant() {
@@ -163,5 +171,5 @@ function Shell() {
 }
 
 export function App(){return <BrowserRouter><RouteEffects/><AuthProvider><Routes><Route element={<Shell/>}><Route path="/" element={<HomePage/>}/><Route path="/tentang" element={<AboutPage/>}/><Route path="/berita" element={<NewsPage/>}/><Route path="/berita/:slug" element={<NewsPage detail/>}/><Route path="/kalender" element={<CalendarPage/>}/><Route path="/galeri" element={<GalleryPage/>}/><Route path="/daftarkiwantika" element={<RegistrationPage/>}/><Route path="/belajar-pramuka" element={<PramukaLearningPage/>}/><Route path="/daftarkiwantika/:slug" element={<RegistrationPage/>}/><Route path="/masuk" element={<LoginPage/>}/><Route path="/dashboard" element={<ProtectedRoute><MemberDashboard/></ProtectedRoute>}/>
-<Route path="/absen/:token" element={<AttendancePage/>}/><Route path="/dashboard/profil" element={<ProtectedRoute><ProfilePage/></ProtectedRoute>}/><Route path="/dashboard/perizinan" element={<ProtectedRoute><PermissionPage/></ProtectedRoute>}/><Route path="/admin" element={<StaffRoute><AdminDashboard/></StaffRoute>}/>
-<Route path="/admin/absensi" element={<StaffRoute><AdminAttendancePage/></StaffRoute>}/><Route path="/admin/perizinan" element={<StaffRoute><PermissionManager/></StaffRoute>}/><Route path="/admin/anggota" element={<StaffRoute><MemberManager/></StaffRoute>}/><Route path="/admin/formulir" element={<StaffRoute><AdminListPage kind="formulir"/></StaffRoute>}/><Route path="/admin/formulir/baru" element={<StaffRoute><FormManager/></StaffRoute>}/><Route path="/admin/formulir/:id" element={<StaffRoute><FormManager/></StaffRoute>}/><Route path="/admin/berita" element={<StaffRoute><AdminListPage kind="berita"/></StaffRoute>}/><Route path="/admin/berita/baru" element={<StaffRoute><AdminListPage kind="berita"/></StaffRoute>}/><Route path="/admin/kegiatan" element={<StaffRoute><AdminListPage kind="kegiatan"/></StaffRoute>}/><Route path="/admin/galeri" element={<StaffRoute><AdminListPage kind="galeri"/></StaffRoute>}/><Route path="*" element={<NotFoundPage/>}/></Route></Routes></AuthProvider></BrowserRouter>}
+<Route path="/absen" element={<ProtectedRoute><AttendanceCodePage/></ProtectedRoute>}/><Route path="/absen/:ref" element={<AttendancePage/>}/><Route path="/dashboard/izin" element={<ProtectedRoute><LeavePage/></ProtectedRoute>}/><Route path="/dashboard/profil" element={<ProtectedRoute><ProfilePage/></ProtectedRoute>}/><Route path="/dashboard/perizinan" element={<Navigate to="/dashboard/izin" replace/>}/><Route path="/dashboard/absensi" element={<ProtectedRoute><MyAttendancePage/></ProtectedRoute>}/><Route path="/admin" element={<StaffRoute><AdminDashboard/></StaffRoute>}/>
+<Route path="/admin/absensi" element={<StaffRoute><AdminAttendancePage/></StaffRoute>}/><Route path="/admin/absensi/:id" element={<StaffRoute><AdminAttendanceReportPage/></StaffRoute>}/><Route path="/admin/absensi/:id/layar" element={<StaffRoute><AdminAttendanceDisplayPage/></StaffRoute>}/><Route path="/admin/izin" element={<StaffRoute><AdminLeavePage/></StaffRoute>}/><Route path="/admin/kas" element={<StaffRoute><AdminFinancePage/></StaffRoute>}/><Route path="/admin/perizinan" element={<Navigate to="/admin/izin" replace/>}/><Route path="/admin/rekap" element={<StaffRoute><AdminEventRecapListPage/></StaffRoute>}/><Route path="/admin/rekap/:id" element={<StaffRoute><AdminEventRecapDetailPage/></StaffRoute>}/><Route path="/admin/anggota" element={<StaffRoute><MemberManager/></StaffRoute>}/><Route path="/admin/formulir" element={<StaffRoute><AdminListPage kind="formulir"/></StaffRoute>}/><Route path="/admin/formulir/baru" element={<StaffRoute><FormManager/></StaffRoute>}/><Route path="/admin/formulir/:id" element={<StaffRoute><FormManager/></StaffRoute>}/><Route path="/admin/berita" element={<StaffRoute><AdminListPage kind="berita"/></StaffRoute>}/><Route path="/admin/berita/baru" element={<StaffRoute><AdminListPage kind="berita"/></StaffRoute>}/><Route path="/admin/kegiatan" element={<StaffRoute><AdminListPage kind="kegiatan"/></StaffRoute>}/><Route path="/admin/galeri" element={<StaffRoute><AdminListPage kind="galeri"/></StaffRoute>}/><Route path="*" element={<NotFoundPage/>}/></Route></Routes></AuthProvider></BrowserRouter>}

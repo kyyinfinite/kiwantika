@@ -368,6 +368,7 @@ function EventRow({ event, past = false }: { event: Event; past?: boolean }) {
         <span><Clock3 size={13} />{formatTime(event.start_at)}{event.end_at ? ` – ${formatTime(event.end_at)}` : ''} WIB</span>
         <span><MapPin size={13} />{event.location || 'Lokasi akan diumumkan'}</span>
       </div>
+      {!past && <div className="event-actions"><Link className="btn small secondary" to={`/dashboard/izin?event=${event.id}`}>Tidak bisa hadir? Ajukan izin</Link></div>}
     </div>
   </article>
 }
@@ -503,7 +504,7 @@ export function LoginPage(){
       <div className="login-intro">
         <span className="eyebrow">Area anggota · KIWANTIKA</span>
         <h1>Masuk ke<br/><em>ambalan.</em></h1>
-        <p>Akses dashboard anggota, informasi kegiatan, perizinan, dan layanan internal KIWANTIKA SMAN 10 Garut.</p>
+        <p>Akses dashboard anggota, informasi kegiatan, absensi, izin & sakit, dan layanan internal KIWANTIKA SMAN 10 Garut.</p>
         <div className="login-meta"><span>15.075 — 15.076</span><span>SMAN 10 GARUT</span></div>
       </div>
       <div className="auth-panel">

@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "migrate:inspect": "node scripts/inspect-legacy.mjs",
     "migrate:dry-run": "node scripts/migrate-legacy.mjs --dry-run",
-    "migrate": "node scripts/migrate-legacy.mjs"
+    "migrate": "node scripts/migrate-legacy.mjs",
+    "test:tunas": "tsx scripts/test-tunas.ts",
+    "test:exports": "tsx scripts/test-exports.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.58.0",
@@ -31,6 +33,7 @@
     "sql.js": "^1.13.0",
     "typescript": "^5.9.2",
     "vite": "^7.1.7",
+    "tsx": "^4.20.5",
     "@types/qrcode": "^1.5.5"
   },
   "engines": {

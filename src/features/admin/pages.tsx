@@ -2,12 +2,13 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import {
   CalendarDays, CheckCircle2, FileText, Images, ImagePlus, Newspaper, Pencil,
-  Plus, Save, Shield, Trash2, Upload, Users, X, FileCheck2, Check, XCircle, Download, Search
+  Plus, Save, Shield, Trash2, Upload, Users, X, FileCheck2, Check, XCircle, Download, Search, Wallet, MailQuestion, ClipboardCheck
 } from 'lucide-react'
 import { supabase, hasSupabase } from '../../lib/supabase'
 import * as XLSX from 'xlsx'
 import { useAuth } from '../auth/AuthProvider'
 import { useConfirm } from '../../components/feedback'
+import { OperationsOverview } from './OperationsOverview'
 import { ContentListSkeleton, StatGridSkeleton, TableSkeleton } from '../../components/Skeleton'
 
 function Panel({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
@@ -52,7 +53,7 @@ async function exportMembersData(){
 }
 
 export function AdminDashboard() {
-  const [counts, setCounts] = useState({ members: 0, forms: 0, submissions: 0, articles: 0, events: 0, permissions: 0, albums: 0 })
+  const [counts, setCounts] = useState({ members: 0, forms: 0, submissions: 0, articles: 0, events: 0, albums: 0 })
   const [recent, setRecent] = useState<any[]>([])
   const [error, setError] = useState('')
   const [exporting, setExporting] = useState<'registration'|'members'|null>(null)
@@ -61,18 +62,17 @@ export function AdminDashboard() {
 
   const load = async () => {
     if (!supabase) return
-    const [p, f, s, a, e, r, g] = await Promise.all([
+    const [p, f, s, a, e, g] = await Promise.all([
       supabase.from('profiles').select('id', { count: 'exact', head: true }),
       supabase.from('forms').select('id', { count: 'exact', head: true }),
       supabase.from('form_submissions').select('id,submission_number,status,created_at', { count: 'exact' }).order('created_at', { ascending: false }).limit(6),
       supabase.from('articles').select('id', { count: 'exact', head: true }),
       supabase.from('events').select('id', { count: 'exact', head: true }),
-      supabase.from('permission_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       supabase.from('albums').select('id', { count: 'exact', head: true })
     ])
-    const firstError = [p, f, s, a, e, r, g].find(x => x.error)?.error
+    const firstError = [p, f, s, a, e, g].find(x => x.error)?.error
     if (firstError) setError(firstError.message)
-    setCounts({ members: p.count || 0, forms: f.count || 0, submissions: s.count || 0, articles: a.count || 0, events: e.count || 0, permissions: r.count || 0, albums: g.count || 0 })
+    setCounts({ members: p.count || 0, forms: f.count || 0, submissions: s.count || 0, articles: a.count || 0, events: e.count || 0, albums: g.count || 0 })
     setRecent(s.data || [])
     setLoading(false)
   }
@@ -84,6 +84,7 @@ export function AdminDashboard() {
   return <div className="wrap page-pad">
     <div className="admin-heading"><div><span className="eyebrow">Management</span><h1>KIWANTIKA Admin</h1><p className="lead">Satu panel untuk mengelola publikasi, kegiatan, galeri, anggota, formulir, dan absensi.</p></div><div className="admin-heading-actions"><button className="btn secondary" disabled={!!exporting} onClick={()=>exportFile('registration')}><Download size={16}/>{exporting==='registration'?'Menyiapkan…':'Download pendaftar'}</button><button className="btn secondary" disabled={!!exporting} onClick={()=>exportFile('members')}><Download size={16}/>{exporting==='members'?'Menyiapkan…':'Download anggota'}</button><Link className="btn primary" to="/admin/berita/baru"><Plus size={17}/> Tulis cerita</Link></div></div>
     {error && <Notice error>{error}</Notice>}
+    <OperationsOverview />
     {loading ? <StatGridSkeleton /> : <div className="stat-grid six">
       <Stat icon={<Users/>} label="Anggota" value={counts.members}/>
       <Stat icon={<FileText/>} label="Formulir" value={counts.forms}/>
@@ -99,7 +100,9 @@ export function AdminDashboard() {
         <Link to="/admin/kegiatan"><CalendarDays/> Kegiatan & agenda</Link>
         <Link to="/admin/galeri"><Images/> Galeri & dokumentasi</Link>
         <Link to="/admin/absensi"><CalendarDays/> QR Absensi</Link>
-        <Link to="/admin/perizinan"><FileCheck2/> Perizinan <span className="admin-link-badge">{counts.permissions || ""}</span></Link>
+        <Link to="/admin/izin"><MailQuestion/> Izin & sakit</Link>
+        <Link to="/admin/kas"><Wallet/> Kas & iuran</Link>
+        <Link to="/admin/rekap"><ClipboardCheck/> Rekap kehadiran</Link>
         <Link to="/admin/anggota"><Users/> Anggota & pengurus</Link>
         <Link to="/admin/formulir"><FileText/> Formulir & pendaftaran</Link>
       </div></Panel>
@@ -108,13 +111,6 @@ export function AdminDashboard() {
   </div>
 }
 
-export function PermissionManager(){
-  const [rows,setRows]=useState<any[]>([]),[filter,setFilter]=useState('pending'),[loading,setLoading]=useState(true),[saving,setSaving]=useState<string|null>(null),[note,setNote]=useState<Record<string,string>>({}),[message,setMessage]=useState(''),[error,setError]=useState('')
-  const load=async()=>{if(!supabase)return;setLoading(true);let q=supabase.from('permission_requests').select('id,member_id,event_id,type,reason,status,review_note,reviewed_by,reviewed_at,created_at,profiles:member_id(full_name,class_name),events:event_id(title,start_at)').order('created_at',{ascending:false});if(filter!=='all')q=q.eq('status',filter);const {data,error:e}=await q;setRows(data||[]);if(e)setError(e.message);setLoading(false)}
-  useEffect(()=>{load()},[filter])
-  const review=async(row:any,status:string)=>{if(!supabase)return;setSaving(row.id);setError('');setMessage('');const {data:{user}}=await supabase.auth.getUser();const reviewNote=(note[row.id]||'').trim()||null;const {error:e}=await supabase.from('permission_requests').update({status,review_note:reviewNote,reviewed_by:user?.id||null,reviewed_at:new Date().toISOString()}).eq('id',row.id);if(e){setError(e.message);setSaving(null);return}if(row.member_id){await supabase.from('notifications').insert({user_id:row.member_id,title:`Perizinan ${status==='approved'?'disetujui':'ditolak'}`,message:reviewNote||`Pengajuan ${row.type} kamu telah ${status==='approved'?'disetujui':'ditolak'}.`})}setMessage(`Pengajuan ${row.type} diperbarui.`);setSaving(null);load()}
-  return <div className="wrap page-pad"><Link className="back-link" to="/admin">← Admin</Link><div className="admin-heading"><div><span className="eyebrow">Administrasi anggota</span><h1>Perizinan</h1><p className="lead">Tinjau pengajuan izin anggota dan simpan keputusan langsung dari panel pengurus.</p></div></div>{message&&<Notice>{message}</Notice>}{error&&<Notice error>{error}</Notice>}<div className="permission-tabs"><button className={filter==='pending'?'active':''} onClick={()=>setFilter('pending')}>Menunggu</button><button className={filter==='approved'?'active':''} onClick={()=>setFilter('approved')}>Disetujui</button><button className={filter==='rejected'?'active':''} onClick={()=>setFilter('rejected')}>Ditolak</button><button className={filter==='all'?'active':''} onClick={()=>setFilter('all')}>Semua</button></div><section className="permission-list">{loading?<ContentListSkeleton rows={3}/>:rows.length?rows.map(row=><article className="permission-card" key={row.id}><div className="permission-card-head"><div><span className="eyebrow">{row.type}</span><h3>{row.profiles?.full_name||'Anggota'}</h3><small>{row.profiles?.class_name||'Kelas belum diisi'} · {new Date(row.created_at).toLocaleString('id-ID')}</small></div><span className={`status ${row.status}`}>{row.status}</span></div><div className="permission-event">{row.events?.title||'Kegiatan tidak terkait'}{row.events?.start_at&&<small>{new Date(row.events.start_at).toLocaleString('id-ID')}</small>}</div><p>{row.reason}</p>{row.status==='pending'?<><label className="field"><span>Catatan pengurus</span><textarea value={note[row.id]||''} onChange={e=>setNote(v=>({...v,[row.id]:e.target.value}))} placeholder="Opsional — misalnya alasan penolakan atau catatan tambahan." /></label><div className="permission-actions"><button className="btn secondary" disabled={saving===row.id} onClick={()=>review(row,'rejected')}><XCircle size={16}/> Tolak</button><button className="btn primary" disabled={saving===row.id} onClick={()=>review(row,'approved')}><Check size={16}/> Setujui</button></div></>:row.review_note&&<div className="permission-note"><strong>Catatan pengurus</strong><span>{row.review_note}</span></div>}</article>):<div className="empty">Tidak ada pengajuan pada filter ini.</div>}</section></div>
-}
 
 function Stat({ icon, label, value }: { icon: ReactNode; label: string; value: number }) {
   return <article className="stat-card"><div className="stat-icon">{icon}</div><div><span>{label}</span><strong>{value}</strong><small>data tersimpan</small></div></article>
@@ -182,7 +178,7 @@ function EventManager() {
   const edit=(r:any)=>{setForm({...empty,...r,start_at:r.start_at?new Date(r.start_at).toISOString().slice(0,16):'',end_at:r.end_at?new Date(r.end_at).toISOString().slice(0,16):''});setFile(null);window.scrollTo({top:0,behavior:'smooth'})}
   const save=async(e:FormEvent)=>{e.preventDefault();if(!supabase)return;setSaving(true);setError('');setMessage('');try{let cover=form.cover_path||null;if(file){const ext=file.name.split('.').pop()||'jpg';const path=`events/${crypto.randomUUID()}.${ext}`;const up=await supabase.storage.from('event-media').upload(path,file,{upsert:false,contentType:file.type});if(up.error)throw up.error;cover=path}const payload={title:form.title.trim(),slug:form.slug.trim()||slugify(form.title),description:form.description.trim()||null,event_type:form.event_type.trim()||'kegiatan',visibility:form.visibility,status:form.status,start_at:new Date(form.start_at).toISOString(),end_at:form.end_at?new Date(form.end_at).toISOString():null,location:form.location.trim()||null,cover_path:cover};const result=form.id?await supabase.from('events').update(payload).eq('id',form.id):await supabase.from('events').insert({...payload});if(result.error)throw result.error;setMessage(form.id?'Kegiatan diperbarui.':'Kegiatan berhasil disimpan.');reset();await load()}catch(err){setError(err instanceof Error?err.message:'Gagal menyimpan kegiatan.')}finally{setSaving(false)}}
   const remove=async(id:string)=>{if(!supabase||!(await ask('Kegiatan yang dihapus tidak dapat dikembalikan.')))return;const {error:e}=await supabase.from('events').delete().eq('id',id);if(e)setError(e.message);else load()}
-  return <div className="wrap page-pad">{dialog}<Link className="back-link" to="/admin">← Admin</Link><div className="admin-heading"><div><span className="eyebrow">Agenda</span><h1>Kegiatan</h1><p className="lead">Kelola agenda latihan, rapat, perkemahan, lomba, dan kegiatan KIWANTIKA.</p></div><Link className="btn secondary" to="/admin/absensi"><CalendarDays size={16}/> Buat absensi</Link></div>{message&&<Notice>{message}</Notice>}{error&&<Notice error>{error}</Notice>}<div className="two-col admin-editor-grid"><form className="form-shell builder-form" onSubmit={save}><div className="panel-head"><h3>{form.id?'Edit kegiatan':'Kegiatan baru'}</h3></div><label className="field"><span>Nama kegiatan</span><input value={form.title} onChange={e=>setForm({...form,title:e.target.value})} required/></label><label className="field"><span>Slug</span><input value={form.slug} onChange={e=>setForm({...form,slug:e.target.value})}/></label><div className="two-col"><label className="field"><span>Mulai</span><input type="datetime-local" value={form.start_at} onChange={e=>setForm({...form,start_at:e.target.value})} required/></label><label className="field"><span>Selesai</span><input type="datetime-local" value={form.end_at} onChange={e=>setForm({...form,end_at:e.target.value})}/></label></div><label className="field"><span>Lokasi</span><input value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/></label><div className="two-col"><label className="field"><span>Visibilitas</span><select value={form.visibility} onChange={e=>setForm({...form,visibility:e.target.value})}><option value="public">Publik</option><option value="members">Anggota</option><option value="management">Pengurus</option></select></label><label className="field"><span>Status</span><select value={form.status} onChange={e=>setForm({...form,status:e.target.value})}><option value="draft">Draft</option><option value="published">Publikasikan</option><option value="archived">Arsip</option></select></label></div><label className="field"><span>Deskripsi</span><textarea value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/></label><label className="field"><span>Poster / gambar kegiatan</span><input type="file" accept="image/*" onChange={e=>setFile(e.target.files?.[0]||null)}/></label><div className="form-actions"><button className="btn primary" disabled={saving}><Save size={16}/>{saving?'Menyimpan…':form.id?'Simpan perubahan':'Simpan kegiatan'}</button><button type="button" className="btn secondary" onClick={reset}>Reset</button></div></form><Panel title="Agenda tersimpan">{loading?<ContentListSkeleton/>:<div className="content-list">{rows.map(r=><article className="content-row" key={r.id}>{r.cover_path?<img src={eventMediaUrl(r.cover_path)} alt=""/>:<div className="content-thumb"><CalendarDays/></div>}<div className="content-main"><strong>{r.title}</strong><span>{new Date(r.start_at).toLocaleString('id-ID')} · {r.status}</span><small>{r.location||'Lokasi belum ditentukan'}</small></div><div className="row-actions"><button onClick={()=>edit(r)}><Pencil size={16}/></button><button onClick={()=>remove(r.id)}><Trash2 size={16}/></button></div></article>)}{!rows.length&&<div className="empty">Belum ada kegiatan.</div>}</div>}</Panel></div></div>
+  return <div className="wrap page-pad">{dialog}<Link className="back-link" to="/admin">← Admin</Link><div className="admin-heading"><div><span className="eyebrow">Agenda</span><h1>Kegiatan</h1><p className="lead">Kelola agenda latihan, rapat, perkemahan, lomba, dan kegiatan KIWANTIKA.</p></div><Link className="btn secondary" to="/admin/absensi"><CalendarDays size={16}/> Buat absensi</Link></div>{message&&<Notice>{message}</Notice>}{error&&<Notice error>{error}</Notice>}<div className="two-col admin-editor-grid"><form className="form-shell builder-form" onSubmit={save}><div className="panel-head"><h3>{form.id?'Edit kegiatan':'Kegiatan baru'}</h3></div><label className="field"><span>Nama kegiatan</span><input value={form.title} onChange={e=>setForm({...form,title:e.target.value})} required/></label><label className="field"><span>Slug</span><input value={form.slug} onChange={e=>setForm({...form,slug:e.target.value})}/></label><div className="two-col"><label className="field"><span>Mulai</span><input type="datetime-local" value={form.start_at} onChange={e=>setForm({...form,start_at:e.target.value})} required/></label><label className="field"><span>Selesai</span><input type="datetime-local" value={form.end_at} onChange={e=>setForm({...form,end_at:e.target.value})}/></label></div><label className="field"><span>Lokasi</span><input value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/></label><div className="two-col"><label className="field"><span>Visibilitas</span><select value={form.visibility} onChange={e=>setForm({...form,visibility:e.target.value})}><option value="public">Publik</option><option value="members">Anggota</option><option value="management">Pengurus</option></select></label><label className="field"><span>Status</span><select value={form.status} onChange={e=>setForm({...form,status:e.target.value})}><option value="draft">Draft</option><option value="published">Publikasikan</option><option value="archived">Arsip</option></select></label></div><label className="field"><span>Deskripsi</span><textarea value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/></label><label className="field"><span>Poster / gambar kegiatan</span><input type="file" accept="image/*" onChange={e=>setFile(e.target.files?.[0]||null)}/></label><div className="form-actions"><button className="btn primary" disabled={saving}><Save size={16}/>{saving?'Menyimpan…':form.id?'Simpan perubahan':'Simpan kegiatan'}</button><button type="button" className="btn secondary" onClick={reset}>Reset</button></div></form><Panel title="Agenda tersimpan">{loading?<ContentListSkeleton/>:<div className="content-list">{rows.map(r=><article className="content-row" key={r.id}>{r.cover_path?<img src={eventMediaUrl(r.cover_path)} alt=""/>:<div className="content-thumb"><CalendarDays/></div>}<div className="content-main"><strong>{r.title}</strong><span>{new Date(r.start_at).toLocaleString('id-ID')} · {r.status}</span><small>{r.location||'Lokasi belum ditentukan'}</small></div><div className="row-actions"><Link className="btn small secondary" to={`/admin/rekap/${r.id}`}>Absensi</Link><button onClick={()=>edit(r)}><Pencil size={16}/></button><button onClick={()=>remove(r.id)}><Trash2 size={16}/></button></div></article>)}{!rows.length&&<div className="empty">Belum ada kegiatan.</div>}</div>}</Panel></div></div>
 }
 
 function GalleryManager(){
