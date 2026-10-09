@@ -1,5 +1,3 @@
--- Phase 9: attendance v2 (rotating signed QR, throttled check-in), leave requests,
--- monthly dues workflow, and a single admin overview RPC. Run after 0008.
 
 create extension if not exists pgcrypto with schema extensions;
 create schema if not exists private;

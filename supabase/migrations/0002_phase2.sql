@@ -1,4 +1,3 @@
--- Phase 2: atomic form submission + stronger public form rules
 create or replace function public.submit_form(
   p_form_id uuid,
   p_form_version_id uuid,

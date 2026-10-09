@@ -1,7 +1,3 @@
--- KIWANTIKA Phase 9
--- 1) Verified Pramuka knowledge base for Tunas (retrieval before generation)
--- 2) Hardened QR attendance RPCs: never return secret hashes, enforce active member status,
---    and make max_checkins atomic.
 
 create table if not exists public.knowledge_sources (
   id uuid primary key default gen_random_uuid(),

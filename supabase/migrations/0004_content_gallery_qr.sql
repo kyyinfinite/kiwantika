@@ -1,4 +1,3 @@
--- Phase 4: content management + public gallery + QR hardening
 
 -- Public gallery reads. Staff retain management through these policies.
 alter table public.albums enable row level security;

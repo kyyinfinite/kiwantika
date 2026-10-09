@@ -1,5 +1,3 @@
--- Phase 3: mobile QR attendance with per-session PIN.
--- The QR token and PIN are hashed in PostgreSQL; clients never read either hash.
 
 create extension if not exists pgcrypto with schema extensions;
 

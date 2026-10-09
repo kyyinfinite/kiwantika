@@ -1,5 +1,3 @@
--- KIWANTIKA Phase 10
--- Fixes natural-language retrieval and adds a verified Dasa Darma knowledge record.
 
 -- One source-backed chunk per concept keeps retrieval precise and auditable.
 insert into public.knowledge_sources(title, issuer, document_no, year, source_url, authority)

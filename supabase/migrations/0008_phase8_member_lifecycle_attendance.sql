@@ -1,5 +1,3 @@
--- KIWANTIKA Phase 8
--- Member lifecycle, trusted notification workflow, and resilient QR attendance windows.
 
 -- ============================================================
 -- MEMBER LIFECYCLE

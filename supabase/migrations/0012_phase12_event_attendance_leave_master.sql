@@ -1,9 +1,4 @@
--- Phase 12: every kegiatan (event) ties together attendance, izin/sakit, and exports.
--- Requires 0011. Replaces the old Perizinan feature (permission_requests) with leave_requests.
 
--- ============================================================
--- 1. LEAVE REQUESTS BELONG TO AN EVENT
--- ============================================================
 alter table public.leave_requests
   add column if not exists event_id uuid references public.events(id) on delete set null;
 create index if not exists leave_requests_event_idx on public.leave_requests(event_id, status);
@@ -32,9 +27,6 @@ on conflict do nothing;
 revoke insert, update, delete on public.permission_requests from authenticated;
 comment on table public.permission_requests is 'Deprecated in phase 12. Data copied into leave_requests; kept read-only for audit.';
 
--- ============================================================
--- 2. EFFECTIVE STATUS OF EVERY MEMBER FOR ONE EVENT
--- ============================================================
 create or replace function private.event_member_status(p_event_id uuid)
 returns table (member_id uuid, name text, class_name text, group_name text, status text,
                checked_in_at timestamptz, method text, note text)
@@ -84,9 +76,6 @@ language sql stable security definer set search_path = '' as $$
 $$;
 revoke all on function private.event_member_status(uuid) from public, anon, authenticated;
 
--- ============================================================
--- 3. EVENT REPORT, MASTER REPORT, MANUAL OVERRIDE
--- ============================================================
 create or replace function public.event_attendance_report(p_event_id uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare
@@ -232,9 +221,6 @@ begin
 end;
 $$;
 
--- ============================================================
--- 4. LEAVE REQUESTS BY EVENT
--- ============================================================
 create or replace function public.list_leave_events()
 returns jsonb language sql stable security definer set search_path = '' as $$
   select coalesce(jsonb_agg(jsonb_build_object(
@@ -338,9 +324,6 @@ begin
 end;
 $$;
 
--- ============================================================
--- 5. MEMBER VIEW (history and rate are per kegiatan)
--- ============================================================
 create or replace function public.my_attendance_history(p_limit integer default 30)
 returns jsonb language sql stable security definer set search_path = '' as $$
   select coalesce(jsonb_agg(to_jsonb(x) order by x.start_at desc), '[]'::jsonb)
@@ -395,9 +378,6 @@ begin
 end;
 $$;
 
--- ============================================================
--- 6. LIVE SESSION REPORT NOW SEES EVENT LEAVE; OVERVIEW DROPS PERIZINAN
--- ============================================================
 create or replace function public.attendance_session_report(p_session_id uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare

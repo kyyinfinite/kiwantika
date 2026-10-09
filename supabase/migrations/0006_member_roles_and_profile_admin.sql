@@ -1,5 +1,3 @@
--- Phase 6: member self-service profiles + super-admin-only role changes.
--- The UI is not a security boundary: this trigger prevents non-super-admin role changes.
 
 create or replace function public.guard_profile_role_change()
 returns trigger
